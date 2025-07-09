@@ -1,14 +1,18 @@
 # flair-fst
 
-[![PyPI - Version](https://img.shields.io/pypi/v/flair-fst.svg)](https://pypi.org/project/flair-fst)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/flair-fst.svg)](https://pypi.org/project/flair-fst)
-
------
-
 ## Table of Contents
 
+- [Development](#development)
 - [Installation](#installation)
 - [License](#license)
+
+## Development
+
+To launch notebooks for experimentation and documentation:
+
+```console
+hatch run notebooks:lab
+```
 
 ## Installation
 

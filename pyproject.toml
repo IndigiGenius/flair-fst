@@ -24,7 +24,9 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = [
+  "pyfoma"
+]
 
 [project.urls]
 Documentation = "https://github.com/IndigiGenius/flair-fst#readme"
@@ -33,6 +35,15 @@ Source = "https://github.com/IndigiGenius/flair-fst"
 
 [tool.hatch.version]
 path = "src/flair_fst/__about__.py"
+
+[tool.hatch.envs.notebooks]
+extra-dependencies = [
+  "jupyterlab",
+  "graphviz",
+]
+
+[tool.hatch.envs.notebooks.scripts]
+lab = "jupyter lab"
 
 [tool.hatch.envs.types]
 extra-dependencies = [
