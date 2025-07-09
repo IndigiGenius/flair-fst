@@ -25,7 +25,8 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "pyfoma"
+  "pyfoma",
+  "rustfst-python",
 ]
 
 [project.urls]
@@ -70,3 +71,6 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.hatch.envs.hatch-static-analysis]
+config-path = "none"  # Disable hatch's unreasonable ruff defaults
