@@ -14,8 +14,8 @@ from os import PathLike
 from pathlib import Path
 from typing import Dict, Iterable, List, TextIO, Tuple, TypedDict, Union
 
-from pyfoma import FST, State  # type: ignore
 from pyfoma.flag import FlagOp, FlagStringFilter  # type: ignore
+from pyfoma.fst import FST, State  # type: ignore
 
 # Brokenness in pyfoma
 try:

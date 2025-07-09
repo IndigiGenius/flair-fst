@@ -25,7 +25,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "pyfoma",
+  "pyfoma<=1.0.7",
   "rustfst-python",
 ]
 
