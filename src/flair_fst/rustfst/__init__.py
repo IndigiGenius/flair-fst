@@ -4,19 +4,42 @@ Bridge pyfoma and rustfst
 
 import logging
 import operator
+import re
 from collections import deque
 from functools import reduce
-from itertools import product
 from pathlib import Path
-from typing import cast, Sequence, Tuple, Union, Iterable, Set
+from typing import cast, Collection, Sequence, Tuple, Union, Iterator, Set
 
-from pyfoma import FST  # type: ignore
-from pyfoma.flag import FlagOp  # type: ignore
+from pyfoma import FST
+from pyfoma.flag import FlagOp, FlagStringFilter, EMPTY, FLAGRE2, FLAGRE3
 
 
-from rustfst.fst.vector_fst import VectorFst
-from rustfst.symbol_table import SymbolTable
-from rustfst.tr import Tr
+from .tr import Tr
+from .trs import Trs
+from .symbol_table import SymbolTable
+from .fst import Fst
+from .fst.vector_fst import VectorFst
+from .fst.const_fst import ConstFst
+from .iterators import TrsIterator, MutableTrsIterator, StateIterator
+from .drawing_config import DrawingConfig
+from .string_paths_iterator import StringPathsIterator
+
+__all__ = [
+    "Tr",
+    "Trs",
+    "SymbolTable",
+    "Fst",
+    "VectorFst",
+    "ConstFst",
+    "TrsIterator",
+    "MutableTrsIterator",
+    "StateIterator",
+    "StringPathsIterator",
+    "DrawingConfig",
+    "pyfoma2rust",
+    "eliminate_flags",
+    "pairs",
+]
 
 LOGGER = logging.getLogger(Path(__file__).stem)
 
@@ -89,7 +112,8 @@ def pyfoma2rust(
     # but outside the set of labels actually used by the FST.
     if "" in used_symbols:
         used_symbols.remove("")
-    all_symbols = set(sym for idx, sym in symtab if idx != 0)
+    # list(symtab) here works around a bug in rustfst
+    all_symbols = set(sym for idx, sym in list(symtab) if idx != 0)
     dot_symbols = all_symbols - used_symbols
     if "." in dot_symbols:
         dot_symbols.remove(".")
@@ -98,6 +122,7 @@ def pyfoma2rust(
         for state, label, isym, osym in states_with_dot_arcs:
             state_id = statenums[state]
             ilabel, olabel = (
+                # This cast is due to a bug in rustfst's type annotations
                 cast(int, symtab.find(dotsym if sym == "." else sym))
                 for sym in (isym, osym)
             )
@@ -116,8 +141,39 @@ def pyfoma2rust(
     return vfst
 
 
-# Code copied from pyfoma 1.0.6 (we can't depend on its internals as they have changed)
-EMPTYVAL = "{}"
+def substitute_no_val_flags_symtab(symtab: SymbolTable) -> SymbolTable:
+    """Normalize flag symbols, converting `[[$FLAG]]` to
+    `[[$FLAG!={}]]` and `[[!$FLAG]]` to `[[$FLAG=={}]]`"""
+    # Code adapted from pyfoma._private.eliminate_flags, (c) 2024 Mans
+    # Hulden, Apache 2.0 License
+    newsyms = SymbolTable()
+    for _, sym in list(symtab):
+        if m := re.match(FLAGRE2, sym):
+            newsyms.add_symbol(f"[[{m.group(1)}={{}}]]")
+        elif m := re.match(FLAGRE3, sym):
+            if m.group(1) == "!":
+                newsyms.add_symbol(f"[[{m.group(2)}=={{}}]]")
+            else:
+                newsyms.add_symbol(f"[[{m.group(2)}!={{}}]]")
+        else:
+            newsyms.add_symbol(sym)
+    return newsyms
+
+
+def substitute_no_val_flags(fst: VectorFst) -> VectorFst:
+    """Normalize flag symbols in-place, converting `[[$FLAG]]` to
+    `[[$FLAG!={}]]` and `[[!$FLAG]]` to `[[$FLAG=={}]]`"""
+    isyms = fst.input_symbols()
+    assert fst.output_symbols() == isyms, (
+        "Input and output symbol tables must be shared!"
+    )
+    newisyms = substitute_no_val_flags_symtab(isyms)
+    fst.set_input_symbols(newisyms)
+    fst.set_output_symbols(newisyms)
+    return fst
+
+
+## BEGIN code copied from pyfoma (as 2.0 won't make it public)
 
 
 def set_pos(X, y):
@@ -137,8 +193,7 @@ def set_neg(X, y, ys):
 
 
 def value_restr(X, y, ys, pos):
-    """Return minimal condition for [[$X==y]] (and [[$X?=y]]) or [[$X!=y]] to fail.
-    Precondition: y != "{}"."""
+    """Return minimal condition for [[$X==y]] (and [[$X?=y]]) or [[$X!=y]] to fail."""
     op = f"('[[${X}=={y}]]'|'[[${X}?={y}]]')" if pos else f"'[[${X}!={y}]]'"
     setval = set_neg(X, y, ys) if pos else set_pos(X, y)
     return FST.re(
@@ -152,30 +207,6 @@ def empty_restr(X, y, ys, pos):
     return FST.re(f"(. - $any)* {op} .*", {"any": set_any(X, ys)})
 
 
-def eq_restr(X1, X2, y1, y2, ys):
-    """Return minimal condition for [[$X1==$X2]] or [[$X1!=$X2]] to fail given
-    values y1 and y2 (and y1 != "{}")."""
-    set1 = FST.re(
-        ".* $set (. - $any)*", {"set": set_pos(X1, y1), "any": set_any(X1, ys)}
-    )
-    set2 = FST.re(
-        ".* $set (. - $any)*", {"set": set_pos(X2, y2), "any": set_any(X2, ys)}
-    )
-    op = f"'[[${X1}!=${X2}]]'" if y1 == y2 else f"'[[${X1}==${X2}]]'"
-    return FST.re(f"($set1 & $set2) {op} .*", {"set1": set1, "set2": set2})
-
-
-def empty_eq_restr(X1, X2, ys):
-    """Return minimal condition for [[$X1==$X2]] or [[$X1!=$X2]] to fail given
-    values that the value of X1 is "{}"."""
-    set1 = FST.re("(. - $any)*", {"any": set_any(X1, ys)})
-    set2 = FST.re(
-        ".* $set (. - $any)*",
-        {"set": set_neg(X2, EMPTYVAL, ys), "any": set_any(X2, ys)},
-    )
-    return FST.re("($set1 & $set2) '[[${X1}==${X2}]]' .*", {"set1": set1, "set2": set2})
-
-
 def get_value_tests(Xs, ys):
     """Return a list of tests for [[$X==y]], [[$X?=y]] and [[$X!=y]] flags which
     valid strings have to pass."""
@@ -184,95 +215,85 @@ def get_value_tests(Xs, ys):
         for y in ys:
             tests.append(value_restr(X, y, ys, pos=True))
             tests.append(value_restr(X, y, ys, pos=False))
-            if y == EMPTYVAL:
+            if y == EMPTY:
                 tests.append(empty_restr(X, y, ys, pos=False))
             else:
                 tests.append(empty_restr(X, y, ys, pos=True))
     return [FST.re(".* - $r", {"r": r}) for r in tests]
 
 
-def get_eq_tests(Xs, ys):
-    """Return a list of tests for [[$X==$Y]], [[$X!=$Y]] flags which valid strings
-    have to pass."""
-    tests = []
-    for X1, X2 in product(Xs, repeat=2):
-        if X1 != X2:
-            for y1, y2 in product(ys, ys):
-                tests.append(eq_restr(X1, X2, y1, y2, ys))
-            tests.append(empty_eq_restr(X1, X2, ys))
-    return [FST.re(".* - $r", {"r": r}) for r in tests]
+## END code copied from pyfoma
 
 
-def make_flag_filter_fsts(
-    alphabet: Iterable[str],
-) -> Tuple[Union[FST, None], Union[FST, None]]:
-    """Make flag filter and cleanup FSTs."""
-    flags = [FlagOp(sym) for sym in alphabet if FlagOp.is_flag(sym)]
-    Xs = set(flag.var[1:] for flag in flags)
-    if len(Xs) == 0:
-        return (None, None)
-    ys = set(flag.val for flag in flags if flag.var[1:] in Xs)
-    ys.add(EMPTYVAL)
-
-    tests = get_value_tests(Xs, ys) + get_eq_tests(Xs, ys)
-    flag_filter = reduce(lambda x, y: FST.re("$x & $y", {"x": x, "y": y}), tests)
-    # We have added some (bogus) flags because of EMPTYVAL
-    flags = [sym for sym in flag_filter.alphabet if FlagOp.is_flag(sym)]
-    clean = reduce(
-        lambda x, y: FST.re("$x @ $y", {"x": x, "y": y}),
-        [FST.re(f"$^rewrite('{flag}':'')") for flag in flags],
-    )
-    return flag_filter, clean
-
-
-def invert(fst: VectorFst) -> VectorFst:
-    """Invert an FST in-place.
-
-    While waiting for a new release of rustfst, here this is."""
-    for s in fst.states():
-        assert s is not None  # WTF
-        # bad api. no donut.
-        tr_it = fst.mutable_trs(s)
-        while not tr_it.done():
-            tr = tr_it.value()
-            assert tr is not None  # WTF
-            tr.olabel, tr.ilabel = tr.ilabel, tr.olabel
-            tr_it.set_value(tr)
-            next(tr_it)
-    return fst
-
-
-def eliminate_flags(fst: VectorFst) -> VectorFst:
+def eliminate_flags(
+    fst: VectorFst, Xs: Union[Collection[str], None] = None
+) -> VectorFst:
     """Return a new VectorFst with flags removed.
 
     Equivalent to eliminate_flags or eliminate_fst_flags (whatever
     it's called these days) but for FSTs that have already been
     converted to rustfst."""
+    # Code adapted from pyfoma._private.eliminate_flags, (c) 2024 Mans
+    # Hulden, Apache 2.0 License
     isyms = fst.input_symbols()
-    newfst = fst.copy()
     if isyms is None:
         LOGGER.warning("FST has no symbol table, cannot remove flags")
+        return fst
+    assert fst.output_symbols() == isyms, (
+        "Input and output symbol tables must be shared!"
+    )
+    newfst = substitute_no_val_flags(fst.copy())
+    flags = [
+        FlagOp(sym) for _, sym in list(newfst.input_symbols()) if FlagOp.is_flag(sym)
+    ]
+    if Xs is None:
+        Xs = set(flag.var[1:] for flag in flags)
+    if len(Xs) == 0:
         return newfst
-    flag_filter, clean = make_flag_filter_fsts(sym for _, sym in isyms)
-    if flag_filter is None or clean is None:
-        return newfst
+    ys = set(flag.val for flag in flags if flag.var[1:] in Xs)
+    ys.add(EMPTY)
 
-    # Make sure that all of the new flag symbols are in the symbol table
+    tests = get_value_tests(Xs, ys)
+    flag_filter = reduce(lambda x, y: FST.re("$x & $y", {"x": x, "y": y}), tests)
+    flags = [sym for sym in flag_filter.alphabet if FlagOp.is_flag(sym)]
+    clean = reduce(
+        lambda x, y: FST.re("$x @ $y", {"x": x, "y": y}),
+        [FST.re(f"$^rewrite('{flag}':'')") for flag in flags],
+    )
+
+    # Make sure that all of the new flag symbols are in the symbol
+    # table, along with everything else (this is essential because of
+    # the weird way .-arcs work in pyfoma)
     newsyms = isyms.copy()
     for sym in clean.alphabet:
         if sym != "":
             newsyms.add_symbol(sym)
     newfst.set_input_symbols(newsyms)
     newfst.set_output_symbols(newsyms)
+
     # Now apply the flag filters
-    rflag_filter = pyfoma2rust(flag_filter, symtab=newfst.input_symbols())
-    rclean = pyfoma2rust(clean, symtab=newfst.input_symbols())
+    rflag_filter = pyfoma2rust(flag_filter, symtab=newsyms)
+    rclean = pyfoma2rust(clean, symtab=newsyms)
+
     newfst.tr_sort(False)
     rflag_filter.tr_sort(True)
     rclean.tr_sort(True)
-    newfst = newfst.compose(rflag_filter).compose(rclean)
-    invert(newfst)
+    newfst = newfst.compose(rflag_filter).compose(rclean).invert()
     newfst.tr_sort(False)
-    newfst = newfst.compose(rclean)
-    invert(newfst)
+    newfst = newfst.compose(rclean).invert()
     return newfst
+
+
+def pairs(fst: VectorFst) -> Iterator[Tuple[str, str]]:
+    alphabet = {sym for _, sym in list(fst.input_symbols())}
+    alphabet.update(sym for _, sym in list(fst.output_symbols()))
+    flag_filter = FlagStringFilter(alphabet)
+    for strpath in StringPathsIterator(fst):
+        # ugh
+        up = strpath.istring().split()
+        down = strpath.ostring().split()
+        if flag_filter(down):
+            yield (
+                "".join(sym for sym in up if not FlagOp.is_flag(sym)),
+                "".join(sym for sym in down if not FlagOp.is_flag(sym)),
+            )

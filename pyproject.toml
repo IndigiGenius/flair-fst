@@ -1,6 +1,9 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools", "setuptools-scm", "setuptools-rust"]
+# Set up a custom backend whose only function is to hack ext-modules
+# below to install rustfst-ffi.so instead of rustfst_python.so
+backend-path = ["_backend"]
+build-backend = "rustfst_backend.build_meta"
 
 [project]
 name = "flair-fst"
@@ -25,8 +28,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "pyfoma<=1.0.7",
-  "rustfst-python",
+  "pyfoma>=1.0.7",
 ]
 
 [project.urls]
@@ -34,8 +36,8 @@ Documentation = "https://github.com/IndigiGenius/flair-fst#readme"
 Issues = "https://github.com/IndigiGenius/flair-fst/issues"
 Source = "https://github.com/IndigiGenius/flair-fst"
 
-[tool.hatch.version]
-path = "src/flair_fst/__about__.py"
+[tool.setuptools_scm]
+version_file = "src/flair_fst/__about__.py"
 
 [tool.hatch.envs.notebooks]
 extra-dependencies = [
@@ -74,3 +76,9 @@ exclude_lines = [
 
 [tool.hatch.envs.hatch-static-analysis]
 config-path = "none"  # Disable hatch's unreasonable ruff defaults
+
+[[tool.setuptools-rust.ext-modules]]
+target = "flair_fst._rustfst_python"
+path = "Cargo.toml"
+binding = "NoBinding"
+

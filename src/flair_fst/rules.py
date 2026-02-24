@@ -8,8 +8,6 @@ from unicodedata import normalize
 
 from pyfoma import FST  # type: ignore
 
-from flair_fst import escape
-
 LOGGER = logging.getLogger(__name__)
 CLASSES = {}
 
@@ -19,7 +17,7 @@ def rule(txt: str) -> FST:
     if norm != txt:
         LOGGER.warning("rule text is not NFC: %s", txt)
         txt = norm
-    return FST.regex(escape(txt), CLASSES)
+    return FST.regex(txt, CLASSES)
 
 
 RULES = []
