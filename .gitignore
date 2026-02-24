@@ -5,3 +5,5 @@ notebooks/FST.pdf
 *.so
 *.egg-info
 /target
+/node_modules
+/src/flair_fst/__about__.py
