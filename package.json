@@ -1,0 +1,48 @@
+{
+    "type": "module",
+    "dependencies": {
+        "express": "^5.1.0",
+        "prettier": "^3.8.1",
+        "zod": "^4.3.6"
+    },
+    "name": "flair-fst",
+    "version": "0.0.1",
+    "description": "REST API for WFST models used in FLAIR",
+    "main": "js/app.js",
+    "directories": {
+        "test": "tests"
+    },
+    "devDependencies": {
+        "@types/chai": "^5.2.2",
+        "@types/express": "^5.0.3",
+        "@types/mocha": "^10.0.10",
+        "chai": "^5.2.1",
+        "mocha": "^11.7.1",
+        "tsx": "^4.20.3",
+        "typescript": "^5.8.3"
+    },
+    "scripts": {
+        "test": "mocha"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/IndigiGenius/flair-fst.git"
+    },
+    "keywords": [
+        "nlp",
+        "dictionary",
+        "fst"
+    ],
+    "author": "David Huggins-Daines",
+    "license": "AGPL-3.0",
+    "bugs": {
+        "url": "https://github.com/IndigiGenius/flair-fst/issues"
+    },
+    "homepage": "https://github.com/IndigiGenius/flair-fst#readme",
+    "mocha": {
+        "node-option": [
+            "import=tsx"
+        ],
+        "spec": "./js/*.spec.ts"
+    }
+}

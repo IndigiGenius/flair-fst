@@ -7,3 +7,4 @@ notebooks/FST.pdf
 /target
 /node_modules
 /src/flair_fst/__about__.py
+package-lock.json
