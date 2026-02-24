@@ -74,3 +74,8 @@ and glosses used there.
 `flair-fst` is distributed under the terms of the [AGPL
 3.0](https://spdx.org/licenses/AGPL-3.0-or-later.html) license, or any
 later version.
+
+Some code in `flair_fst.rustfst` is derived from
+[rustfst](https://docs.rs/rustfst/latest/rustfst/) and
+[pyfoma](https://mhulden.github.io/pyfoma/) and is distributed under
+the terms of the [Apache-2.0](https://spdx.org/licenses/MIT) license.

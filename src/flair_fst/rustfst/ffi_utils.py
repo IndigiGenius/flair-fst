@@ -1,0 +1,52 @@
+from contextlib import contextmanager
+from ctypes import (
+    cdll,
+    c_char_p,
+    string_at,
+    byref,
+    Structure,
+    POINTER,
+    c_int32,
+    c_uint8,
+)
+
+from pathlib import Path
+from typing import Iterator, List, Union
+
+dylib_dir = Path(__file__).parent.parent
+dylib_files = list(dylib_dir.glob("*.so")) or list(dylib_dir.glob("*.cpython-*.so"))
+if not dylib_files:
+    raise ImportError(f"Could not find compiled library in {dylib_dir}")
+dylib_path = dylib_files[0]
+lib = cdll.LoadLibrary(str(dylib_path))
+
+PathOrStr = Union[Path, str]
+
+
+class CStringArray(Structure):
+    _fields_ = [("data", POINTER(c_char_p)), ("size", c_int32)]
+
+    def to_pylist(self) -> List[str]:
+        return [self.data[i].decode("utf8") for i in range(self.size)]
+
+
+class CBuffer(Structure):
+    _fields_ = [("data", POINTER(c_uint8)), ("size", c_int32)]
+
+
+@contextmanager
+def string_pointer(ptr: c_char_p) -> Iterator[c_char_p]:
+    try:
+        yield ptr
+    finally:
+        lib.rustfst_destroy_string(ptr)
+
+
+def check_ffi_error(exit_code: int, error_context_msg: str) -> None:
+    if exit_code != 0:
+        with string_pointer(c_char_p()) as ptr:
+            if lib.rustfst_ffi_get_last_error(byref(ptr)) == 0:
+                ffi_error_message = string_at(ptr).decode("utf8")
+            else:
+                ffi_error_message = "see stderr"
+        raise ValueError(f"{error_context_msg}: {ffi_error_message}")
