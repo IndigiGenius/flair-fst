@@ -60,7 +60,7 @@ Once you have such a spreadsheet, you can run the command-line
 interface to convert it to a lexicon:
 
 ```console
-flair-fst sample.ods
+flair-fst compile sample.ods
 ```
 
 This will create (provided it doesn't already exist) the directory
@@ -79,7 +79,7 @@ To produce a standalone HTML file which you can share, that can simply
 be opened from the explorer, you can run:
 
 ```console
-flair-fst compile sample.flairfst
+flair-fst html sample.flairfst
 ```
 
 By default this will create `sample.html`.
