@@ -163,7 +163,7 @@ def substitute_no_val_flags_symtab(symtab: SymbolTable) -> SymbolTable:
 def substitute_no_val_flags(fst: VectorFst) -> VectorFst:
     """Normalize flag symbols in-place, converting `[[$FLAG]]` to
     `[[$FLAG!={}]]` and `[[!$FLAG]]` to `[[$FLAG=={}]]`"""
-    isyms = fst.input_symbols()
+    isyms = fst.input_symbols() or SymbolTable()
     assert fst.output_symbols() == isyms, (
         "Input and output symbol tables must be shared!"
     )
