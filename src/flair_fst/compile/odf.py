@@ -1,0 +1,35 @@
+"""
+Load an ODS spreadsheet into a WFST definition.
+"""
+
+import csv
+import logging
+from os import PathLike
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from typing import Union
+from odfdo import Document
+from .definition import Definition
+from .csv import load_definition as load_csv_definition
+
+LOGGER = logging.getLogger(Path(__file__).stem)
+
+
+def load_definition(path: Union[str, PathLike]) -> Definition:
+    """Compile a Definition from an ODF spreadsheet."""
+    path = Path(path)
+    doc = Document(path)
+
+    # The easiest and laziest way to do this: Dump everything to CSV
+    # files then use the CSV code (sorry not sorry)
+    with TemporaryDirectory() as tempdir:
+        tempdir = Path(tempdir)
+        for s in doc.body.sheets:
+            s.optimize_width()
+            outpath = (tempdir / s.name.lower()).with_suffix(".csv")
+            with open(outpath, "w", encoding="utf-8") as fh:
+                writer = csv.writer(fh)
+                for row in s.iter_rows():
+                    writer.writerow([cell.value for cell in row.cells])
+        return load_csv_definition(tempdir)
+
