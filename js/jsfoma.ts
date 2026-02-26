@@ -19,9 +19,9 @@ import {
     Target as _Target,
     Weight as _Weight,
 } from "./jsfoma.zod.js";
-import { z } from "zod";
 
-export { FSTSchema };
+// Note that zod will not remain in the compiled code, which is what we want
+import { z } from "zod";
 export type FST = z.infer<typeof FSTSchema>;
 export type Symbols = z.infer<typeof _Symbols>;
 export type Target = z.infer<typeof _Target>;
