@@ -58,6 +58,7 @@ class WordDefinition(NamedTuple):
 class MorphDefinition(NamedTuple):
     """Definition of a morpheme (prefix, root, suffix, etc)."""
 
+    morph: str
     form: str
     idx: Union[int, None]
     tags: List[str]
@@ -75,6 +76,7 @@ class MorphDefinition(NamedTuple):
                 lang = m[1] or "_default"
                 glosses[lang] = row[key]
         return cls(
+            morph=row["morph"].strip(),
             form=row["form"].strip(),
             ref=row["ref"].strip(),
             notes=row["notes"].strip(),

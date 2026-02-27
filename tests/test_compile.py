@@ -3,21 +3,48 @@ Tests for compiling WFSTs from input tables.
 """
 
 from pathlib import Path
+from flair_fst.compile import Definition
 from flair_fst.compile.odf import load_definition
-from flair_fst.compile.approx import make_approx
+
+import pytest
 
 TESTDIR = Path(__file__).parent / "data"
 
 
-def test_load_ods() -> None:
+@pytest.fixture
+def defn() -> Definition:
+    return load_definition(TESTDIR / "example.ods")
+
+
+def test_load_ods(defn) -> None:
     """Test basic loading from ODS."""
-    defn = load_definition(TESTDIR / "example.ods")
-    assert defn.words
+    assert defn.stems
 
 
-def test_approx() -> None:
+def test_approx(defn) -> None:
     """Test building approximate matching table."""
-    defn = load_definition(TESTDIR / "example.ods")
+    from flair_fst.compile.approx import make_approx
+
     approx = make_approx(defn.spelling)
     assert ("ça", 1.0) in approx.generate("sa", weights=True)
     assert ("œuf", 0.0) in approx.generate("oeuf", weights=True)
+
+
+def test_lexicon(defn) -> None:
+    """Test RLG lexicon construction from tables."""
+    from flair_fst.compile.lexicon import make_rlg, make_lexicon
+    from flair_fst import pairs
+
+    print(defn.stems)
+    print(make_rlg(defn))
+    fsg = make_lexicon(defn)
+    for up, down in pairs(fsg):
+        print(up, down)
+
+
+def test_glossary(defn) -> None:
+    """Test construction of glossary from, uh, glosses."""
+
+
+def test_bibliography(defn) -> None:
+    """Test construction of bibliography."""

@@ -9,3 +9,4 @@ notebooks/FST.pdf
 /src/flair_fst/__about__.py
 package-lock.json
 acceptor.dot
+*\#
