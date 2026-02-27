@@ -18,7 +18,9 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+            ~/.cache/pip/
+            .mypy_cache
+          key: ${{ runner.os }}-${{ hashFiles('**/Cargo.lock', '**/pyproject.toml') }}
       - name: Install Hatch
         uses: pypa/hatch@install
       - name: Check types with mypy
@@ -36,7 +38,9 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+            ~/.cache/pip/
+            .mypy_cache
+          key: ${{ runner.os }}-${{ hashFiles('**/Cargo.lock', '**/pyproject.toml') }}
       - name: Install Hatch
         uses: pypa/hatch@install
       - name: Run tests
