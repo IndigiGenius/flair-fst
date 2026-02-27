@@ -161,5 +161,6 @@ def pairs(fst: FST):
             )
 
 
-# Type alias for RLG input
-RLG = Dict[str, List[Union[Tuple[str, str], Tuple[Tuple[str, str], str]]]]
+# Type aliases for RLG input
+RLGEntry = Union[Tuple[str, str], Tuple[Tuple[str, str], str]]
+RLG = Dict[str, List[RLGEntry]]

@@ -9,13 +9,13 @@ Public interface to flair_fst.
 import json
 from pathlib import Path
 from pyfoma import FST
-from .fst import RLG, todict
+from .fst import RLG, RLGEntry, todict
 from .compile import Definition, compile
 from .compile.approx import make_approx
 from .compile.bibliography import make_bibliography
 from .compile.glossary import make_glossary
 
-__all__ = ["FST", "RLG", "compile_lexicon"]
+__all__ = ["FST", "RLG", "RLGEntry", "compile_lexicon"]
 
 
 def compile_lexicon(defn: Definition, path: Path) -> None:

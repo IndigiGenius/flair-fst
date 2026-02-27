@@ -19,7 +19,7 @@ class FSTDict(TypedDict):
 
 class Gloss(TypedDict, total=False):
     gloss: str
-    root: str
+    form: str
     ref: str
     page: str
 

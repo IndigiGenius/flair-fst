@@ -127,7 +127,6 @@ class SymbolDefinition(NamedTuple):
     def from_row(cls, row: Dict[str, str]):
         """Load from a row in a CSV reader."""
         return cls(
-            sym=row["sym"].strip(),
             ipa=row["ipa"].strip(),
             ref=row["ref"].strip(),
             page=None if row["page"] == "" else int(row["page"]),

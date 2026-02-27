@@ -112,8 +112,7 @@ def pyfoma2rust(
     # but outside the set of labels actually used by the FST.
     if "" in used_symbols:
         used_symbols.remove("")
-    # list(symtab) here works around a bug in rustfst
-    all_symbols = set(sym for idx, sym in list(symtab) if idx != 0)
+    all_symbols = set(sym for idx, sym in symtab if idx != 0)
     dot_symbols = all_symbols - used_symbols
     if "." in dot_symbols:
         dot_symbols.remove(".")
@@ -147,7 +146,7 @@ def substitute_no_val_flags_symtab(symtab: SymbolTable) -> SymbolTable:
     # Code adapted from pyfoma._private.eliminate_flags, (c) 2024 Mans
     # Hulden, Apache 2.0 License
     newsyms = SymbolTable()
-    for _, sym in list(symtab):
+    for _, sym in symtab:
         if m := re.match(FLAGRE2, sym):
             newsyms.add_symbol(f"[[{m.group(1)}={{}}]]")
         elif m := re.match(FLAGRE3, sym):
@@ -235,16 +234,10 @@ def eliminate_flags(
     converted to rustfst."""
     # Code adapted from pyfoma._private.eliminate_flags, (c) 2024 Mans
     # Hulden, Apache 2.0 License
-    isyms = fst.input_symbols()
-    if isyms is None:
-        LOGGER.warning("FST has no symbol table, cannot remove flags")
-        return fst
-    assert fst.output_symbols() == isyms, (
-        "Input and output symbol tables must be shared!"
-    )
     newfst = substitute_no_val_flags(fst.copy())
+    newsyms = newfst.input_symbols() or SymbolTable()
     flags = [
-        FlagOp(sym) for _, sym in list(newfst.input_symbols()) if FlagOp.is_flag(sym)
+        FlagOp(sym) for _, sym in newsyms if FlagOp.is_flag(sym)
     ]
     if Xs is None:
         Xs = set(flag.var[1:] for flag in flags)
@@ -261,10 +254,11 @@ def eliminate_flags(
         [FST.re(f"$^rewrite('{flag}':'')") for flag in flags],
     )
 
-    # Make sure that all of the new flag symbols are in the symbol
-    # table, along with everything else (this is essential because of
-    # the weird way .-arcs work in pyfoma)
-    newsyms = isyms.copy()
+    # Now recreate the symbol table, making absolute sure that all of
+    # the old *and* new flag symbols are present, along with
+    # everything else (this is essential because of the weird way
+    # .-arcs work in pyfoma)
+    newsyms = (fst.input_symbols() or SymbolTable()).copy()
     for sym in clean.alphabet:
         if sym != "":
             newsyms.add_symbol(sym)
@@ -285,8 +279,8 @@ def eliminate_flags(
 
 
 def pairs(fst: VectorFst) -> Iterator[Tuple[str, str]]:
-    alphabet = {sym for _, sym in list(fst.input_symbols())}
-    alphabet.update(sym for _, sym in list(fst.output_symbols()))
+    alphabet = {sym for _, sym in (fst.input_symbols() or [])}
+    alphabet.update(sym for _, sym in (fst.output_symbols() or []))
     flag_filter = FlagStringFilter(alphabet)
     for strpath in StringPathsIterator(fst):
         # ugh
