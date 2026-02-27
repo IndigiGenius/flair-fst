@@ -48,8 +48,10 @@ def test_rules(defn) -> None:
 
     print(defn.rules)
     rules = make_rules(defn)
-    print(list(rules["gspell"].apply("mang-ons")))
-    print(list(rules["delete"].apply("mang-ons")))
+    assert list(rules["nostem"].apply("mang-")) == []
+    assert list(rules["deldash"].apply("mang-+ons")) == ["mang+ons"]
+    assert list(rules["gspell"].apply("mang+ons")) == ["mange+ons"]
+    assert list(rules["delmorph"].apply("mange+ons")) == ["mangeons"]
 
 
 def test_glossary(defn) -> None:

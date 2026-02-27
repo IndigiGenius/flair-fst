@@ -90,6 +90,7 @@ FIXQUOTES = {
     ord("’"): "'",
     ord("“"): '"',
     ord("”"): '"',
+    ord(" "): ' ',
 }
 
 
@@ -103,8 +104,9 @@ class RuleDefinition(NamedTuple):
     @classmethod
     def from_row(cls, row: Dict[str, str]):
         """Load from a row in a CSV reader."""
-        # Remove smart quotes from regex, since we can't easily stop
-        # LibreOffice and Excel from putting them in
+        # Remove smart quotes and non-breaking spaces from regex,
+        # since we can't easily stop LibreOffice and Excel from
+        # putting them in
         translate = str.translate
         regex = row["rule"].strip().translate(FIXQUOTES)
         return cls(
