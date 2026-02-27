@@ -29,12 +29,16 @@ classifiers = [
 ]
 dependencies = [
   "pyfoma>=1.0.7",
+  "odfdo",
 ]
 
 [project.urls]
 Documentation = "https://github.com/IndigiGenius/flair-fst#readme"
 Issues = "https://github.com/IndigiGenius/flair-fst/issues"
 Source = "https://github.com/IndigiGenius/flair-fst"
+
+[project.scripts]
+flair-fst = "flair_fst.cli:main"
 
 [tool.setuptools_scm]
 version_file = "src/flair_fst/__about__.py"
@@ -51,6 +55,7 @@ lab = "jupyter lab"
 [tool.hatch.envs.types]
 extra-dependencies = [
   "mypy>=1.0.0",
+  "pytest",
 ]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/flair_fst tests}"

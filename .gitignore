@@ -8,3 +8,5 @@ notebooks/FST.pdf
 /node_modules
 /src/flair_fst/__about__.py
 package-lock.json
+acceptor.dot
+*\#

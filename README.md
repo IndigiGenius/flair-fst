@@ -34,7 +34,7 @@ A FLAIR-FST lexicon consists of four JSON files:
 
 - `bibliography.json`: A bibliography of linguistic or community
   resources where words or morphemes are attested.
-- `lexicon.json`: A list of words (and morphemes) with *glosses*, that
+- `glossary.json`: A list of words (and morphemes) with *glosses*, that
   is, definitions in one or more languages.
 - `orthography.json`: A weighted finite-state transducer which defines
   equivalent or approximate inputs for the writing system of the
@@ -51,10 +51,38 @@ A FLAIR-FST lexicon consists of four JSON files:
 While it is theoretically possible to construct these yourself (they
 do have JSON schemas, so you can even edit them easily in VS.Code or
 another intelligent editor) we provide a means to build them from a
-spreadsheet, for easier editing.  A template spreadsheet in Excel
-format is provided which contains a trivial example lexicon (French
-words with glosses in English and Spanish) and some basic alternation
-rules.
+spreadsheet, for easier editing.  A template spreadsheet in
+OpenDocument format is provided which contains a trivial example
+lexicon (French words with glosses in English and Spanish) and some
+basic alternation rules.
+
+Once you have such a spreadsheet, you can run the command-line
+interface to convert it to a lexicon:
+
+```console
+flair-fst compile sample.ods
+```
+
+This will create (provided it doesn't already exist) the directory
+`sample.flairfst` next to your spreadsheet.  If you have defined a
+test set in your spreadsheet (see the worksheet "Tests"), then these
+tests will also be run, and any failures will be reported
+
+Provided all your tests have passed, you can now query the lexicon in
+your browser with:
+
+```console
+flair-fst run sample.flairfst
+```
+
+To produce a standalone HTML file which you can share, that can simply
+be opened from the explorer, you can run:
+
+```console
+flair-fst html sample.flairfst
+```
+
+By default this will create `sample.html`.
 
 ### From a MinCourse
 
@@ -63,11 +91,9 @@ XML](https://github.com/IndigiGenius/MinCourse) format, a template
 spreadsheet or an initial lexicon can also be induced from the words
 and glosses used there.
 
-## Compile the lexicon
-
-
-## Test the lexicon
-
+```console
+flair-fst derive sample.mincourse.xml
+```
 
 ## License
 

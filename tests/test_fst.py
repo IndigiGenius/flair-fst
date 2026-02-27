@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from pyfoma import FST, algorithms
-from flair_fst import toatt, tojson, todict, fromdict, pairs
+from flair_fst.fst import toatt, tojson, todict, fromdict, pairs
 
 
 def make_simple_fst():
