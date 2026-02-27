@@ -33,20 +33,20 @@ def test_approx(defn) -> None:
 def test_lexicon(defn) -> None:
     """Test RLG lexicon construction from tables."""
     from flair_fst.compile.lexicon import make_rlg, make_lexicon
-    from flair_fst import pairs
 
-    print(defn.stems)
-    print(make_rlg(defn))
+    rlg = make_rlg(defn)
+    assert "START" in rlg
+    assert "words" in rlg
+    assert "stems" in rlg
     fsg = make_lexicon(defn)
-    for up, down in pairs(fsg):
-        print(up, down)
+    assert list(fsg.apply("démarche")) == ["démarche"]
+    assert list(fsg.apply("manger+1pl")) == ["mang-+ons"]
 
 
 def test_rules(defn) -> None:
     """Test rule construction from tables."""
     from flair_fst.compile.rules import make_rules
 
-    print(defn.rules)
     rules = make_rules(defn)
     assert list(rules["nostem"].apply("mang-")) == []
     assert list(rules["deldash"].apply("mang-+ons")) == ["mang+ons"]
@@ -68,3 +68,15 @@ def test_bibliography(defn) -> None:
 
     bibliography = make_bibliography(defn)
     print(bibliography)
+
+
+def test_full_compile(defn) -> None:
+    """Test fully compiled lexicon and rules."""
+    from flair_fst import pairs
+    from flair_fst.compile import compile
+
+    lex = compile(defn)
+    for up, down in pairs(lex):
+        print(up, down)
+    assert "mangons" not in lex.apply("manger+1pl")
+    assert "mangeons" in lex.apply("manger+1pl")
