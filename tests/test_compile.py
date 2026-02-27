@@ -72,7 +72,7 @@ def test_bibliography(defn) -> None:
 
 def test_full_compile(defn) -> None:
     """Test fully compiled lexicon and rules."""
-    from flair_fst import pairs
+    from flair_fst.fst import pairs
     from flair_fst.compile import compile
 
     lex = compile(defn)

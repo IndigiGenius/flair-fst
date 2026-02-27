@@ -34,7 +34,7 @@ A FLAIR-FST lexicon consists of four JSON files:
 
 - `bibliography.json`: A bibliography of linguistic or community
   resources where words or morphemes are attested.
-- `lexicon.json`: A list of words (and morphemes) with *glosses*, that
+- `glossary.json`: A list of words (and morphemes) with *glosses*, that
   is, definitions in one or more languages.
 - `orthography.json`: A weighted finite-state transducer which defines
   equivalent or approximate inputs for the writing system of the
