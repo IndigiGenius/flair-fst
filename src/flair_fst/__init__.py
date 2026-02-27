@@ -17,6 +17,8 @@ from typing import Dict, List, Union, Tuple, TypedDict
 from pyfoma.flag import FlagOp, FlagStringFilter
 from pyfoma.fst import FST, State
 
+from flair_fst.models import FSTDict, TransitionsDict
+
 # Use this for epsilon labels to be compatible with foma
 EPSILON = "@0@"
 
@@ -29,15 +31,6 @@ def escape_state(name: str):
 def toatt(fst: FST, base: Union[PathLike, str], state_symbols=False, epsilon=EPSILON) -> None:
     """Save to AT&T format files."""
     fst.save_att(Path(base), state_symbols, epsilon)
-
-
-TransitionsDict = Dict[int, Dict[str, List[Union[int, Tuple[int, float]]]]]
-
-
-class FSTDict(TypedDict):
-    t: TransitionsDict
-    f: Dict[int, float]
-    s: Dict[str, int]
 
 
 # The released pyfoma version of this still has some bugs...

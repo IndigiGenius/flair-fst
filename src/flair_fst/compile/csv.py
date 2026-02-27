@@ -27,18 +27,30 @@ def load_definition(path: Union[str, PathLike]) -> Definition:
     """Compile a Definition from a directory of CSV files."""
     directory = Path(path)
     words = [
-        WordDefinition.from_row(row) for row in _get_reader(directory, "word.csv")
+        WordDefinition.from_row(row)
+        for row in _get_reader(directory, "words.csv")
+        if row["form"]
     ]
     stems = [
-        MorphDefinition.from_row(row) for row in _get_reader(directory, "stem.csv")
+        MorphDefinition.from_row(row)
+        for row in _get_reader(directory, "stems.csv")
+        if row["morph"]
     ]
     # Note that Python dicts preserve ordering, which is very important here
     prefixes = {
-        path.stem: [MorphDefinition.from_row(row) for row in _get_reader(directory, path.name)]
+        path.stem: [
+            MorphDefinition.from_row(row)
+            for row in _get_reader(directory, path.name)
+            if row["morph"]
+        ]
         for path in sorted(directory.glob("*prefix*.csv"))
     }
     suffixes = {
-        path.stem: [MorphDefinition.from_row(row) for row in _get_reader(directory, path.name)]
+        path.stem: [
+            MorphDefinition.from_row(row)
+            for row in _get_reader(directory, path.name)
+            if row["morph"]
+        ]
         for path in sorted(directory.glob("*suffix*.csv"))
     }
     spelling = spelling_from_table(_get_reader(directory, "spelling.csv"))

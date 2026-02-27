@@ -27,8 +27,8 @@ class WordDefinition(NamedTuple):
     """Definition of a fully composed word or invariant form."""
 
     form: str
-    idx: Union[int, None]
     base: str
+    idx: Union[int, None]
     tags: List[str]
     ref: str
     page: Union[int, None]
@@ -108,28 +108,23 @@ def spelling_from_table(table: Iterable[Dict[str, str]]):
     return result
 
 
-@dataclass
-class BibliographyRecord:
-    """Bibliography entry.
-
-    This is a dataclass and not a NamedTuple as we will export it
-    directly to JSON.
-    """
+class BibliographyRecord(NamedTuple):
+    """Bibliography entry."""
 
     url: str
     citation: str
-    pageOffset: int
+    page_offset: int
 
 
 def bibliography_from_table(table: Iterable[Dict[str, str]]):
     """Create dictionary of BibliographyRecord from a list of rows."""
     bibliography = {}
     for row in table:
-        abbrev = (row["abbreviation"],)
+        abbrev = row["abbreviation"]
         bibliography[abbrev] = BibliographyRecord(
             url=row["url"],
             citation=row["citation"],
-            pageOffset=int(row["page offset"]) if row["page offset"] else 0,
+            page_offset=int(row["page offset"]) if row["page offset"] else 0,
         )
     return bibliography
 

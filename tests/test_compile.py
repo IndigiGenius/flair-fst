@@ -44,7 +44,14 @@ def test_lexicon(defn) -> None:
 
 def test_glossary(defn) -> None:
     """Test construction of glossary from, uh, glosses."""
+    from flair_fst.compile.glossary import make_glossary
 
+    glossary = make_glossary(defn)
+    print(glossary)
 
 def test_bibliography(defn) -> None:
     """Test construction of bibliography."""
+    from flair_fst.compile.bibliography import make_bibliography
+
+    bibliography = make_bibliography(defn)
+    print(bibliography)

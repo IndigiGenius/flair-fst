@@ -17,9 +17,14 @@ def make_rlg(defn: Definition) -> Tuple[RLG, str]:
     information.
 
     """
-    lex: RLG = {}
+    lex: RLG = {"START": []}
+    if defn.words:
+        lex["START"].append(("", "words"))
+        lex["words"] = []
+        for w in defn.words:
+            lex["words"].append((w.form, "#"))
     start: Union[str, None] = None
-    prefix_names = [*defn.prefixes, "stem"]
+    prefix_names = [*defn.prefixes, "stems"]
     for name, continuation in itertools.pairwise(prefix_names):
         if start is None:
             start = name
@@ -28,19 +33,20 @@ def make_rlg(defn: Definition) -> Tuple[RLG, str]:
             sublex.append(((m.morph, m.form), continuation))
         lex[name] = sublex
     if start is None:
-        start = "stem"
+        start = "stems"
+    lex["START"].append(("", start))
     suffix_names = [*defn.suffixes, "#"]
     continuation = suffix_names[0]
     sublex = []
     for m in defn.stems:
         sublex.append(((m.morph, m.form), continuation))
-    lex["stem"] = sublex
+    lex["stems"] = sublex
     for name, continuation in itertools.pairwise(suffix_names):
         sublex = [("", continuation)]
         for m in defn.suffixes[name]:
             sublex.append(((m.morph, m.form), continuation))
         lex[name] = sublex
-    return lex, start
+    return lex
 
 
 def make_lexicon(defn: Definition) -> FST:
@@ -54,5 +60,5 @@ def make_lexicon(defn: Definition) -> FST:
     TODO: This will be modifiable using continuation classes.
 
     """
-    rlg, start = make_rlg(defn)
-    return FST.rlg(rlg, start)
+    rlg = make_rlg(defn)
+    return FST.rlg(rlg, "START")
