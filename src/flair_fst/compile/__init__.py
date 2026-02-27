@@ -20,5 +20,6 @@ def compile(defn: Definition) -> FST:
     lex = make_lexicon(defn)
     rules = make_rules(defn)
     for name, rule in rules.items():
-        lex.compose(rule)
+        # Ugh, pyfoma's algorithm magic causes issues here...
+        lex.compose(rule)  # type: ignore
     return lex

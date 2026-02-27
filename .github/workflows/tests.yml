@@ -9,6 +9,15 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - uses: actions/checkout@v4
       - name: Install Hatch
         uses: pypa/hatch@install
@@ -18,6 +27,15 @@ jobs:
     needs: check
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - uses: actions/checkout@v4
       - name: Install Hatch
         uses: pypa/hatch@install

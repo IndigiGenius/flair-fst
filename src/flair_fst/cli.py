@@ -81,7 +81,7 @@ def main() -> None:
     try:
         args.func(args)
     except FileExistsError as e:
-        parser.error(e)
+        parser.error(str(e))
 
 if __name__ == '__main__':
     main()

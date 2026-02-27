@@ -3,10 +3,10 @@ Compile lexicon from definitions.
 """
 
 import itertools
-from typing import Tuple
+from typing import List, Tuple, Union
 from pyfoma import FST
 
-from flair_fst import RLG
+from flair_fst import RLG, RLGEntry
 from .definition import Definition, MorphDefinition
 
 
@@ -18,7 +18,7 @@ def make_pair(m: MorphDefinition) -> Tuple[str, str]:
     return (f"{m.morph}{tagtext}", f"{m.form}{tagtext}")
 
 
-def make_rlg(defn: Definition) -> Tuple[RLG, str]:
+def make_rlg(defn: Definition) -> RLG:
     """Create a right-linear grammar from the tables in defn.
 
     This is an intermediate step, see `make_lexicon` for more
@@ -36,7 +36,7 @@ def make_rlg(defn: Definition) -> Tuple[RLG, str]:
     for name, continuation in itertools.pairwise(prefix_names):
         if start is None:
             start = name
-        sublex = [("", continuation)]
+        sublex: List[RLGEntry] = [("", continuation)]
         for m in defn.prefixes[name]:
             sublex.append((make_pair(m), continuation))
         lex[name] = sublex

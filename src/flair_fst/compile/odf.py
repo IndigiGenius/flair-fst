@@ -23,10 +23,12 @@ def load_definition(path: Union[str, PathLike]) -> Definition:
     # The easiest and laziest way to do this: Dump everything to CSV
     # files then use the CSV code (sorry not sorry)
     with TemporaryDirectory() as tempdir:
-        tempdir = Path(tempdir)
+        temppath = Path(tempdir)
         for s in doc.body.sheets:
+            if s.name is None:
+                continue
             s.optimize_width()
-            outpath = (tempdir / s.name.lower()).with_suffix(".csv")
+            outpath = (temppath / s.name.lower()).with_suffix(".csv")
             with open(outpath, "w", encoding="utf-8") as fh:
                 writer = csv.writer(fh)
                 for row in s.iter_rows():
