@@ -25,7 +25,7 @@ def test_approx(defn) -> None:
     """Test building approximate matching table."""
     from flair_fst.compile.approx import make_approx
 
-    approx = make_approx(defn.spelling)
+    approx = make_approx(defn)
     assert ("ça", 1.0) in approx.generate("sa", weights=True)
     assert ("œuf", 0.0) in approx.generate("oeuf", weights=True)
 
@@ -33,14 +33,18 @@ def test_approx(defn) -> None:
 def test_lexicon(defn) -> None:
     """Test RLG lexicon construction from tables."""
     from flair_fst.compile.lexicon import make_rlg, make_lexicon
+    from flair_fst.fst import pairs
 
     rlg = make_rlg(defn)
+    print(rlg)
     assert "START" in rlg
     assert "words" in rlg
     assert "stems" in rlg
     fsg = make_lexicon(defn)
     assert list(fsg.apply("démarche")) == ["démarche"]
     assert list(fsg.apply("manger+1pl")) == ["mang-+ons"]
+    # Make sure flags work
+    assert list(fsg.apply("dé-gagner+1sg")) == []
 
 
 def test_rules(defn) -> None:

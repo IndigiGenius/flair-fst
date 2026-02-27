@@ -19,20 +19,27 @@ LOG = logging.getLogger("flair-fst")
 
 def compile_command(args: argparse.Namespace) -> None:
     """Compile a spreadsheet into a WFST."""
-    # Placeholder for actual implementation
-    pass
+    from flair_fst import compile_lexicon
+
+    if args.input.is_dir():
+        from flair_fst.compile.csv import load_definition
+        defn = load_definition(args.input)
+    else:
+        from flair_fst.compile.odf import load_definition
+        defn = load_definition(args.input)
+    if args.output is None:
+        args.output = args.input.with_suffix(".flairfst")
+    args.output.mkdir(exist_ok=args.force)
+    
+    compile_lexicon(defn, args.output)
 
 
 def run_command(args: argparse.Namespace) -> None:
     """Run a WFST in the browser."""
-    # Placeholder for actual implementation
-    pass
 
 
 def html_command(args: argparse.Namespace) -> None:
     """Compile a WFST into a standalone HTML tool."""
-    # Placeholder for actual implementation
-    pass
 
 
 def derive_command(args: argparse.Namespace) -> None:
@@ -45,28 +52,25 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command")
 
-    # Compile subcommand
     compile_parser = subparsers.add_parser("compile", help="Compile spreadsheet to WFST lexicon")
-    compile_parser.add_argument("input", help="Input spreadsheet in ODS format")
+    compile_parser.add_argument("input", type=Path, help="Input spreadsheet, either ODS or directory of CSV")
     compile_parser.add_argument("-o", "--output", type=Path, help="Output WFST directory (optional)")
+    compile_parser.add_argument("-f", "--force", action="store_true", help="Overwrite output directory")
     compile_parser.set_defaults(func=compile_command)
 
-    # Run subcommand
     run_parser = subparsers.add_parser("run", help="Run a WFST lexicon in the browser")
     run_parser.add_argument("lexdir", help="Lexicon directory")
     run_parser.add_argument("-p", "--port", type=int, default=8080, help="Port for the HTTP server (default: 8080)")
     run_parser.add_argument("-b", "--browser", action="store_true", help="Open in default browser")
     run_parser.set_defaults(func=run_command)
 
-    # HTML subcommand
     html_parser = subparsers.add_parser("html", help="Compile a WFST into a standalone HTML tool")
-    html_parser.add_argument("input", help="Input lexicon directory")
+    html_parser.add_argument("input", type=Path, help="Input lexicon directory")
     html_parser.add_argument("-o", "--output", type=Path, help="Output HTML file (optional)")
     html_parser.set_defaults(func=html_command)
 
-    # Derive subcommand
     derive_parser = subparsers.add_parser("derive", help="Derive spreadsheet from MinCourse")
-    derive_parser.add_argument("input", help="Input in MinCourse XML format")
+    derive_parser.add_argument("input", type=Path, help="Input in MinCourse XML format")
     derive_parser.add_argument("-o", "--output", type=Path, help="Output spreadsheet file (optional)")
     derive_parser.set_defaults(func=derive_command)
 
@@ -75,9 +79,11 @@ def main() -> None:
     if not hasattr(args, 'func'):
         parser.print_help()
         parser.exit(status=2, message="Please specify a command.\n")
-    
-    args.func(args)
 
+    try:
+        args.func(args)
+    except FileExistsError as e:
+        parser.error(e)
 
 if __name__ == '__main__':
     main()

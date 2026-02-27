@@ -31,7 +31,6 @@ class WordDefinition(NamedTuple):
     form: str
     base: str
     idx: Union[int, None]
-    tags: List[str]
     ref: str
     page: Union[int, None]
     glosses: Dict[str, str]
@@ -50,7 +49,6 @@ class WordDefinition(NamedTuple):
             ref=row["ref"].strip(),
             idx=None if row["index"] == "" else int(row["index"]),
             page=None if row["page"] == "" else int(row["page"]),
-            tags=SEMIRE.split(row["tags"].strip()),
             glosses=glosses,
         )
 
@@ -61,7 +59,7 @@ class MorphDefinition(NamedTuple):
     morph: str
     form: str
     idx: Union[int, None]
-    tags: List[str]
+    flags: List[str]
     ref: str
     page: Union[int, None]
     glosses: Dict[str, str]
@@ -74,13 +72,15 @@ class MorphDefinition(NamedTuple):
             if m := GLOSSRE.match(key):
                 lang = m[1] or "_default"
                 glosses[lang] = row[key]
+        flagtext = row["flags"].strip()
+        flags = SEMIRE.split(flagtext) if flagtext else []
         return cls(
             morph=row["morph"].strip(),
             form=row["form"].strip(),
             ref=row["ref"].strip(),
             idx=None if row["index"] == "" else int(row["index"]),
             page=None if row["page"] == "" else int(row["page"]),
-            tags=SEMIRE.split(row["tags"].strip()),
+            flags=flags,
             glosses=glosses,
         )
 
