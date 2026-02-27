@@ -1,5 +1,5 @@
 """
-Types for WFST definitions.
+Types for WFST definitions found in CSV, ODF, XLSX input files.
 """
 
 import re
@@ -18,6 +18,8 @@ class Definition:
     prefixes: Dict[str, List["MorphDefinition"]]
     stems: List["MorphDefinition"]
     suffixes: Dict[str, List["MorphDefinition"]]
+    symbols: Dict[str, "SymbolDefinition"]
+    rules: Dict[str, "RuleDefinition"]
     spelling: Dict[str, List["TargetOrthography"]]
     bibliography: Dict[str, "BibliographyRecord"]
     tests: List["TestCase"]
@@ -33,7 +35,6 @@ class WordDefinition(NamedTuple):
     ref: str
     page: Union[int, None]
     glosses: Dict[str, str]
-    notes: str
 
     @classmethod
     def from_row(cls, row: Dict[str, str]):
@@ -47,7 +48,6 @@ class WordDefinition(NamedTuple):
             form=row["form"].strip(),
             base=row["base"].strip(),
             ref=row["ref"].strip(),
-            notes=row["notes"].strip(),
             idx=None if row["index"] == "" else int(row["index"]),
             page=None if row["page"] == "" else int(row["page"]),
             tags=SEMIRE.split(row["tags"].strip()),
@@ -65,7 +65,6 @@ class MorphDefinition(NamedTuple):
     ref: str
     page: Union[int, None]
     glosses: Dict[str, str]
-    notes: str
 
     @classmethod
     def from_row(cls, row: Dict[str, str]):
@@ -79,11 +78,57 @@ class MorphDefinition(NamedTuple):
             morph=row["morph"].strip(),
             form=row["form"].strip(),
             ref=row["ref"].strip(),
-            notes=row["notes"].strip(),
             idx=None if row["index"] == "" else int(row["index"]),
             page=None if row["page"] == "" else int(row["page"]),
             tags=SEMIRE.split(row["tags"].strip()),
             glosses=glosses,
+        )
+
+
+FIXQUOTES = {
+    ord("‘"): "'",
+    ord("’"): "'",
+    ord("“"): '"',
+    ord("”"): '"',
+}
+
+
+class RuleDefinition(NamedTuple):
+    """Definition of an alternation rule."""
+
+    regex: str
+    ref: str
+    page: Union[int, None]
+
+    @classmethod
+    def from_row(cls, row: Dict[str, str]):
+        """Load from a row in a CSV reader."""
+        # Remove smart quotes from regex, since we can't easily stop
+        # LibreOffice and Excel from putting them in
+        translate = str.translate
+        regex = row["rule"].strip().translate(FIXQUOTES)
+        return cls(
+            regex=regex,
+            ref=row["ref"].strip(),
+            page=None if row["page"] == "" else int(row["page"]),
+        )
+
+
+class SymbolDefinition(NamedTuple):
+    """Definition of a symbol in the orthography."""
+
+    ipa: str
+    ref: str
+    page: Union[int, None]
+
+    @classmethod
+    def from_row(cls, row: Dict[str, str]):
+        """Load from a row in a CSV reader."""
+        return cls(
+            sym=row["sym"].strip(),
+            ipa=row["ipa"].strip(),
+            ref=row["ref"].strip(),
+            page=None if row["page"] == "" else int(row["page"]),
         )
 
 

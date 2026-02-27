@@ -7,6 +7,8 @@ from .definition import (
     Definition,
     WordDefinition,
     MorphDefinition,
+    SymbolDefinition,
+    RuleDefinition,
     TestCase,
     spelling_from_table,
     bibliography_from_table,
@@ -53,6 +55,8 @@ def load_definition(path: Union[str, PathLike]) -> Definition:
         ]
         for path in sorted(directory.glob("*suffix*.csv"))
     }
+    rules = {row["name"]: RuleDefinition.from_row(row) for row in _get_reader(directory, "rules.csv")}
+    symbols = {row["sym"]: SymbolDefinition.from_row(row) for row in _get_reader(directory, "symbols.csv")}
     spelling = spelling_from_table(_get_reader(directory, "spelling.csv"))
     bib = bibliography_from_table(_get_reader(directory, "bibliography.csv"))
     tests = [TestCase.from_row(row) for row in _get_reader(directory, "tests.csv")]
@@ -62,6 +66,8 @@ def load_definition(path: Union[str, PathLike]) -> Definition:
         prefixes=prefixes,
         stems=stems,
         suffixes=suffixes,
+        rules=rules,
+        symbols=symbols,
         spelling=spelling,
         bibliography=bib,
         tests=tests,

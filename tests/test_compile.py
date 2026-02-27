@@ -42,12 +42,23 @@ def test_lexicon(defn) -> None:
         print(up, down)
 
 
+def test_rules(defn) -> None:
+    """Test rule construction from tables."""
+    from flair_fst.compile.rules import make_rules
+
+    print(defn.rules)
+    rules = make_rules(defn)
+    print(list(rules["gspell"].apply("mang-ons")))
+    print(list(rules["delete"].apply("mang-ons")))
+
+
 def test_glossary(defn) -> None:
     """Test construction of glossary from, uh, glosses."""
     from flair_fst.compile.glossary import make_glossary
 
     glossary = make_glossary(defn)
     print(glossary)
+
 
 def test_bibliography(defn) -> None:
     """Test construction of bibliography."""
