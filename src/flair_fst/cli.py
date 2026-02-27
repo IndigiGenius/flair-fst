@@ -44,8 +44,6 @@ def html_command(args: argparse.Namespace) -> None:
 
 def derive_command(args: argparse.Namespace) -> None:
     """Derive a spreadsheet from a MinCourse."""
-    # Placeholder for actual implementation
-    pass
 
 
 def main() -> None:
