@@ -1,13 +1,12 @@
 {
+    "name": "flair-fst",
     "type": "module",
+    "description": "WFST tools for the FLAIR project",
     "dependencies": {
         "express": "^5.1.0",
-        "prettier": "^3.8.1",
         "zod": "^4.3.6"
     },
-    "name": "flair-fst",
-    "version": "0.0.1",
-    "description": "REST API for WFST models used in FLAIR",
+    "version": "0.1.0",
     "main": "js/app.js",
     "directories": {
         "test": "tests"
@@ -19,7 +18,8 @@
         "chai": "^5.2.1",
         "mocha": "^11.7.1",
         "tsx": "^4.20.3",
-        "typescript": "^5.8.3"
+        "typescript": "^5.8.3",
+        "prettier": "^3.8.1"
     },
     "scripts": {
         "test": "mocha"
@@ -33,7 +33,10 @@
         "dictionary",
         "fst"
     ],
-    "author": "David Huggins-Daines",
+    "author": {
+        "name": "David Huggins-Daines",
+        "email": "dhd@ecolingui.ca"
+    },
     "license": "AGPL-3.0",
     "bugs": {
         "url": "https://github.com/IndigiGenius/flair-fst/issues"
