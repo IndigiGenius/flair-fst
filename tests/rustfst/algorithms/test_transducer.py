@@ -1,3 +1,6 @@
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+
 from flair_fst.rustfst.algorithms import transducer
 from flair_fst.rustfst import DrawingConfig, SymbolTable
 
@@ -11,4 +14,7 @@ def test_transducer():
 
     f = transducer("hello world", "coucou monde", symt, symt)
     d = DrawingConfig()
-    f.draw("acceptor.dot", None, None, d)
+
+    with NamedTemporaryFile() as tf:
+        f.draw(tf.name, None, None, d)
+        assert Path(tf.name).exists()
