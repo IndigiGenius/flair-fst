@@ -32,16 +32,30 @@ class Definition:
     spelling: Dict[str, List["TargetOrthography"]]
     bibliography: Dict[str, "BibliographyRecord"]
     tests: List["TestCase"]
+    boundaries: Collection[str] = "+="
 
     @property
     def multichar_symbols(self) -> Union[Collection[str], None]:
-        """Set of multi-chararacter symbols defined in this lexicon"""
-        if not self.symbols:
-            return None
-        # TODO: Decide what to do about morphological tags here, probably
-        # we will treat anything starting/ending with +, =, or [ as a
-        # multi-character symbol, while morphs with - are considered to be
-        # an orthographic form.  But this needs to be documented!
+        """Set of multi-chararacter symbols defined in this lexicon.
+
+        This is defived from:
+
+        - Symbols defined in the `symbols` table explicitly
+        - Prefixes ending with `+` or `=`
+        - Suffixes beginning with `+` or `=`
+        """
+        if hasattr(self, "_multichar_symbols"):
+            return self._multichar_symbols
+        self._multichar_symbols: Collection[str] = {*self.symbols.keys()}
+        for table in self.prefixes.values():
+            for morph in table:
+                if morph.morph[-1] in self.boundaries:
+                    self._multichar_symbols.add(morph.morph)
+        for table in self.suffixes.values():
+            for morph in table:
+                if morph.morph[0] in self.boundaries:
+                    self._multichar_symbols.add(morph.morph)
+
         return self.symbols
 
 
