@@ -12,7 +12,7 @@ import re as pyre
 from collections import deque
 from os import PathLike
 from pathlib import Path
-from typing import Dict, List, Union, Tuple, TypedDict
+from typing import Dict, List, Union, Tuple
 
 from pyfoma.flag import FlagOp, FlagStringFilter
 from pyfoma.fst import FST, State
@@ -28,7 +28,9 @@ def escape_state(name: str):
     return pyre.sub(r"\W", "_", name)
 
 
-def toatt(fst: FST, base: Union[PathLike, str], state_symbols=False, epsilon=EPSILON) -> None:
+def toatt(
+    fst: FST, base: Union[PathLike, str], state_symbols=False, epsilon=EPSILON
+) -> None:
     """Save to AT&T format files."""
     fst.save_att(Path(base), state_symbols, epsilon)
 

@@ -3,7 +3,6 @@ Compile approximate matcher from table.
 """
 
 import re
-from typing import List, Dict
 from pyfoma import FST
 from .definition import Definition
 
@@ -13,7 +12,7 @@ ESCAPER = re.compile(f"([{re.escape(SPECIALS)}])")
 
 def escape(txt: str) -> str:
     """Try to escape things for PyFoma"""
-    return ESCAPER.sub(r"\\\1" ,txt)
+    return ESCAPER.sub(r"\\\1", txt)
 
 
 def make_approx(defn: Definition) -> FST:
@@ -26,4 +25,6 @@ def make_approx(defn: Definition) -> FST:
                 rules.append(f"({escape(approx)}) :? ({escape(glyphs)})<{cost}>")
             else:
                 rules.append(f"({escape(approx)}) :? ({escape(glyphs)})")
-    return FST.regex(f"$^rewrite({' | '.join(rules)})", multichar_symbols=defn.multichar_symbols)
+    return FST.regex(
+        f"$^rewrite({' | '.join(rules)})", multichar_symbols=defn.multichar_symbols
+    )

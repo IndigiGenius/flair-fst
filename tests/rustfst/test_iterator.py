@@ -1,4 +1,10 @@
-from flair_fst.rustfst import VectorFst, TrsIterator, MutableTrsIterator, StateIterator, Tr
+from flair_fst.rustfst import (
+    VectorFst,
+    TrsIterator,
+    MutableTrsIterator,
+    StateIterator,
+    Tr,
+)
 import pytest
 
 

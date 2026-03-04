@@ -41,7 +41,6 @@ def test_approx(defn) -> None:
 def test_lexicon(defn) -> None:
     """Test RLG lexicon construction from tables."""
     from flair_fst.compile.lexicon import make_rlg, make_lexicon
-    from flair_fst.fst import pairs
 
     rlg = make_rlg(defn)
     print(rlg)
@@ -70,6 +69,7 @@ def test_symbols(defn) -> None:
     """Verify the treatment of multi-character symbols."""
     assert "gn" in defn.multichar_symbols
     from flair_fst.compile.lexicon import make_lexicon
+
     fsg = make_lexicon(defn)
     assert "gn" in fsg.alphabet
     assert fsg.tokenize_against_alphabet("gagner") == "g a gn e r".split()

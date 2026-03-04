@@ -37,4 +37,3 @@ def load_definition(path: Union[str, PathLike]) -> Definition:
     with TemporaryDirectory() as tempdir:
         convert_to_csvs(path, tempdir)
         return load_csv_definition(tempdir)
-

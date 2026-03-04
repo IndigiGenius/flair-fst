@@ -236,9 +236,7 @@ def eliminate_flags(
     # Hulden, Apache 2.0 License
     newfst = substitute_no_val_flags(fst.copy())
     newsyms = newfst.input_symbols() or SymbolTable()
-    flags = [
-        FlagOp(sym) for _, sym in newsyms if FlagOp.is_flag(sym)
-    ]
+    flags = [FlagOp(sym) for _, sym in newsyms if FlagOp.is_flag(sym)]
     if Xs is None:
         Xs = set(flag.var[1:] for flag in flags)
     if len(Xs) == 0:

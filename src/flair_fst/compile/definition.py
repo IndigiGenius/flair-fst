@@ -127,7 +127,6 @@ class RuleDefinition(NamedTuple):
         # Remove smart quotes and non-breaking spaces from regex,
         # since we can't easily stop LibreOffice and Excel from
         # putting them in
-        translate = str.translate
         regex = row["rule"].strip().translate(FIXQUOTES)
         return cls(
             regex=regex,
