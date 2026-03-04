@@ -69,4 +69,4 @@ def make_lexicon(defn: Definition) -> FST:
 
     """
     rlg = make_rlg(defn)
-    return FST.rlg(rlg, "START")
+    return FST.rlg(rlg, "START", multichar_symbols=defn.multichar_symbols)

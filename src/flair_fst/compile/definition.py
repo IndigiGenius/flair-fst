@@ -4,7 +4,16 @@ Types for WFST definitions found in CSV, ODF, XLSX input files.
 
 import re
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Literal, NamedTuple, TypeGuard, Union
+from typing import (
+    Collection,
+    Dict,
+    Iterable,
+    List,
+    Literal,
+    NamedTuple,
+    TypeGuard,
+    Union,
+)
 
 SEMIRE = re.compile(r"\s+;\s+")
 GLOSSRE = re.compile(r"gloss(?:\s+(.*))?")
@@ -23,6 +32,17 @@ class Definition:
     spelling: Dict[str, List["TargetOrthography"]]
     bibliography: Dict[str, "BibliographyRecord"]
     tests: List["TestCase"]
+
+    @property
+    def multichar_symbols(self) -> Union[Collection[str], None]:
+        """Set of multi-chararacter symbols defined in this lexicon"""
+        if not self.symbols:
+            return None
+        # TODO: Decide what to do about morphological tags here, probably
+        # we will treat anything starting/ending with +, =, or [ as a
+        # multi-character symbol, while morphs with - are considered to be
+        # an orthographic form.  But this needs to be documented!
+        return self.symbols
 
 
 class WordDefinition(NamedTuple):
@@ -90,7 +110,7 @@ FIXQUOTES = {
     ord("’"): "'",
     ord("“"): '"',
     ord("”"): '"',
-    ord(" "): ' ',
+    ord(" "): " ",
 }
 
 

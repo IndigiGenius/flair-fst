@@ -66,6 +66,15 @@ def test_rules(defn) -> None:
     assert list(rules["delmorph"].apply("mange+ons")) == ["mangeons"]
 
 
+def test_symbols(defn) -> None:
+    """Verify the treatment of multi-character symbols."""
+    assert "gn" in defn.multichar_symbols
+    from flair_fst.compile.lexicon import make_lexicon
+    fsg = make_lexicon(defn)
+    assert "gn" in fsg.alphabet
+    assert fsg.tokenize_against_alphabet("gagner") == "g a gn e r".split()
+
+
 def test_glossary(defn) -> None:
     """Test construction of glossary from, uh, glosses."""
     from flair_fst.compile.glossary import make_glossary
