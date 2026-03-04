@@ -26,6 +26,7 @@ class Gloss(TypedDict, total=False):
 
 Glossary = Dict[str, Dict[str, Gloss]]
 
+
 class BibliographyRecord(TypedDict):
     """Bibliography entry."""
 

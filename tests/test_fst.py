@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from pyfoma import FST, algorithms
+from pyfoma import FST
 from flair_fst.fst import toatt, tojson, todict, fromdict, pairs
 
 
@@ -96,6 +96,7 @@ def make_approx() -> FST:
             | ʔ:Ɂ
         )
     """)
+
 
 APPROXFST = make_approx()
 

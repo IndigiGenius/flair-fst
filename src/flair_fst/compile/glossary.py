@@ -8,11 +8,17 @@ from typing import List, Union
 from .definition import Definition, WordDefinition, MorphDefinition
 from ..models import Glossary, Gloss
 
+
 def make_glossary(defn: Definition) -> Glossary:
     """Make output glossary from tables in definition."""
     glosses: Glossary = {}
     entry: Union[WordDefinition, MorphDefinition]
-    tables: List = [defn.words, *defn.prefixes.values(), defn.stems, *defn.suffixes.values()]
+    tables: List = [
+        defn.words,
+        *defn.prefixes.values(),
+        defn.stems,
+        *defn.suffixes.values(),
+    ]
     for entry in itertools.chain.from_iterable(tables):
         if not entry.glosses:
             continue

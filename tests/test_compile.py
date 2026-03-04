@@ -16,6 +16,14 @@ def defn() -> Definition:
     return load_definition(TESTDIR / "example.ods")
 
 
+def test_load_csv(defn) -> None:
+    """Test loading from CSVs."""
+    from flair_fst.compile.csv import load_definition as load_csv_definition
+
+    csv_defn = load_csv_definition(TESTDIR / "example-csv")
+    assert csv_defn == defn
+
+
 def test_load_ods(defn) -> None:
     """Test basic loading from ODS."""
     assert defn.stems
@@ -33,7 +41,6 @@ def test_approx(defn) -> None:
 def test_lexicon(defn) -> None:
     """Test RLG lexicon construction from tables."""
     from flair_fst.compile.lexicon import make_rlg, make_lexicon
-    from flair_fst.fst import pairs
 
     rlg = make_rlg(defn)
     print(rlg)
@@ -56,6 +63,18 @@ def test_rules(defn) -> None:
     assert list(rules["deldash"].apply("mang-+ons")) == ["mang+ons"]
     assert list(rules["gspell"].apply("mang+ons")) == ["mange+ons"]
     assert list(rules["delmorph"].apply("mange+ons")) == ["mangeons"]
+
+
+def test_symbols(defn) -> None:
+    """Verify the treatment of multi-character symbols."""
+    assert "gn" in defn.multichar_symbols
+    assert "+inf" in defn.multichar_symbols
+    assert "dé-" not in defn.multichar_symbols
+    from flair_fst.compile.lexicon import make_lexicon
+
+    fsg = make_lexicon(defn)
+    assert "gn" in fsg.alphabet
+    assert fsg.tokenize_against_alphabet("gagner") == "g a gn e r".split()
 
 
 def test_glossary(defn) -> None:

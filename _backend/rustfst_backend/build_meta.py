@@ -1,6 +1,6 @@
 from typing import List, Literal
 
-from setuptools.build_meta import *
+from setuptools.build_meta import *  # noqa: F403
 from setuptools.dist import Distribution
 from setuptools_rust import setuptools_ext, RustExtension
 
