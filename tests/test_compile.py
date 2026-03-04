@@ -16,6 +16,14 @@ def defn() -> Definition:
     return load_definition(TESTDIR / "example.ods")
 
 
+def test_load_csv(defn) -> None:
+    """Test loading from CSVs."""
+    from flair_fst.compile.csv import load_definition as load_csv_definition
+
+    csv_defn = load_csv_definition(TESTDIR / "example-csv")
+    assert csv_defn == defn
+
+
 def test_load_ods(defn) -> None:
     """Test basic loading from ODS."""
     assert defn.stems

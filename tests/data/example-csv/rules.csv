@@ -1,0 +1,5 @@
+name,rule,ref,page,notes
+nostem,$^restrict( \- / _ .+ # ),,,forbid bare stems or prefixes
+deldash,$^rewrite( \- : ‘’),,,remove dashes
+gspell,$^rewrite( g:(ge) / _ \+ [aou] ),,,alternate g to ge before « hard » vowels
+delmorph,$^rewrite( \+ : ’’ ),,,delete morpheme boundaries
