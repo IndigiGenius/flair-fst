@@ -11,24 +11,8 @@
  */
 
 import {
-    FST as FSTSchema,
-    Finals as _Finals,
-    Symbols as _Symbols,
-    States as _States,
-    State as _State,
-    Target as _Target,
-    Weight as _Weight,
+    FST, Finals, Symbols, States, State, Target, Weight
 } from "./jsfoma.zod.js";
-
-// Note that zod will not remain in the compiled code, which is what we want
-import { z } from "zod";
-export type FST = z.infer<typeof FSTSchema>;
-export type Symbols = z.infer<typeof _Symbols>;
-export type Target = z.infer<typeof _Target>;
-export type Weight = z.infer<typeof _Weight>;
-export type State = z.infer<typeof _State>;
-export type States = z.infer<typeof _States>;
-export type Finals = z.infer<typeof _Finals>;
 
 function get_labels(label: string): [string, string] {
     // Split labels on | (which can be escaped)
