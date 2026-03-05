@@ -17,7 +17,7 @@ export type Glossary = z.infer<typeof GlossarySchema>;
 
 export const SourceSchema = z.object({
     url: z.string().optional(),
-    cite: z.string(),
+    citation: z.string(),
     pageOffset: z.number().default(0),
 });
 export type Source = z.infer<typeof SourceSchema>;

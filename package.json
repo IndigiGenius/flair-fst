@@ -3,6 +3,7 @@
     "type": "module",
     "description": "WFST tools for the FLAIR project",
     "dependencies": {
+        "debounce": "^3.0.0",
         "express": "^5.1.0",
         "zod": "^4.3.6"
     },
@@ -17,9 +18,10 @@
         "@types/mocha": "^10.0.10",
         "chai": "^5.2.1",
         "mocha": "^11.7.1",
+        "prettier": "^3.8.1",
         "tsx": "^4.20.3",
         "typescript": "^5.8.3",
-        "prettier": "^3.8.1"
+        "vite": "^7.3.1"
     },
     "scripts": {
         "test": "mocha"
