@@ -17,9 +17,10 @@ __all__ = ["Definition", "compile"]
 
 def compile(defn: Definition) -> FST:
     """Compile an FST from a definition."""
-    lex = make_lexicon(defn)
+    lex = make_lexicon(defn).eliminate_flags()  # type: ignore
+    lex = lex.epsilon_remove().determinize().minimize()
     rules = make_rules(defn)
     for name, rule in rules.items():
         # Ugh, pyfoma's algorithm magic causes issues here...
-        lex.compose(rule)  # type: ignore
+        lex.compose(rule).epsilon_remove().determinize().minimize()
     return lex
