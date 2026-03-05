@@ -19,7 +19,7 @@ import {
     linearFST,
     project,
 } from "./jsfoma.js";
-import generatedIcon from "/generated-icon.png";
+import generatedIcon from "./generated-icon.png";
 
 class FlairFST extends HTMLElement {
     morphology: FST | null = null;
@@ -35,13 +35,258 @@ class FlairFST extends HTMLElement {
 
     constructor() {
         super();
-        // TODO: Error handling if these don't exist, or maybe just create them
-        this.wordBox = this.querySelector("input.wordbox") as HTMLInputElement;
-        this.morphBox = this.querySelector(".morphbox") as HTMLElement;
-        this.searchForm = this.querySelector(
-            "form.searchform",
+        const shadow = this.attachShadow({ mode: "open"});
+        shadow.innerHTML = `
+<style type="text/css">
+:host {
+    display: flex;
+    flex-direction: row;
+    box-sizing: border-box;
+    gap: 1%;
+}
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+.search {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 0px;
+    background: #ffffff;
+    flex: 2;
+    max-width: 40%;
+    box-sizing: border-box;
+}
+#searchform {
+    position: relative;
+    width: 100%;
+}
+#wordbox {
+    min-width: 75%;
+    border-radius: 0;
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 16px;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    margin-bottom: 20px;
+}
+#wordforms {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    position: absolute;
+    background: white;
+    overflow-y: auto;
+    /* We can't contain it in the column because responsive */
+    max-height: 70vh;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0%;
+}
+#wordforms li {
+    display: block;
+    width: 100%;
+    padding: 4px;
+    border: none;
+}
+#wordforms li.selected {
+    background: #e9f3fb;
+    color: #1c5b97;
+    font-weight: 600;
+}
+#morphbox  {
+    margin-bottom: 1em;
+    flex: 3;
+    flex-direction: column;
+    max-width: 80%;
+    width: 5px;
+}
+#morphbox article {
+    margin-bottom: 1em;
+}
+.igt {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 24px;
+    background: #ffffff;
+    /* Grays/200 */
+    border: 1px solid #e9eaeb;
+    border-radius: 8px;
+    /* Inside auto layout */
+    flex: 3;
+    max-width: 100%;
+    order: 0;
+    align-self: stretch;
+    flex-grow: 0;
+}
+.igtrow {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+}
+.igtrow div {
+    flex: 1;
+}
+.morphs-and-glosses-container {
+    /* The container that has all the morphs and glosses for a search result */
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+}
+
+.morphs-and-glosses-container > * {
+    /* Handle CSS for all children of the container */
+    box-sizing: border-box; /* Include padding and borders in size */
+    flex-shrink: 1; /* Allow shrinking to fit */
+    max-width: 100%; /* Prevent children from exceeding container width */
+}
+
+.morph-and-gloss-row {
+    display: flex;
+    flex-direction: row;
+
+    align-items: center;
+    padding: 0px;
+    gap: 12px;
+
+    /* Inside auto layout */
+    flex: none;
+    order: 1;
+    flex-grow: 0;
+}
+
+.morph-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.gloss-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.morph {
+    /* Morph styling */
+
+    /* Text md/Medium */
+    font-style: normal;
+    font-weight: 550;
+    font-size: 16px;
+    line-height: 24px;
+    /* identical to box height, or 150% */
+
+    color: #000000;
+    flex: 1;
+}
+
+.gloss {
+    /* Gloss styling */
+
+    /* Text sm/Regular */
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+
+    color: #000000;
+    flex: 1;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 0px;
+    gap: 8px;
+}
+
+.form-row-word {
+    margin: 0;
+    text-align: left;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 32px;
+    color: #000000;
+}
+hr.form-row-divider {
+    height: 1px;
+    background: #d9d9d9;
+}
+.validation-icon {
+    display: block;
+    margin: 0 auto;
+    width: 32px;
+    height: 34px;
+    flex: none;
+    order: 1;
+    flex-grow: 0;
+}
+.tooltip {
+    background: #0a2a42;
+    color: white;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: auto;
+    right: 40px;
+    max-width: 270px;
+    white-space: nowrap;
+    height: auto;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 10;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+.triangle {
+    position: absolute;
+    top: 50%;
+    right: -10px;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 6px 0 6px 10px;
+    border-color: transparent transparent transparent #0a2a42;
+}
+a.ref {
+    text-decoration: none;
+    color: #1c5b97;
+}
+</style>
+<div class="search">
+  <form id="searchform">
+    <input
+      type="search"
+      role="combobox"
+      placeholder="Enter a word..."
+      id="wordbox"
+      autocomplete="off"
+      />
+    <ul role="listbox" id="wordforms"></ul>
+  </form>
+</div>
+<div id="morphbox"></div>
+`;
+        this.wordBox = shadow.getElementById("wordbox") as HTMLInputElement;
+        this.morphBox = shadow.getElementById("morphbox") as HTMLElement;
+        this.searchForm = shadow.getElementById(
+            "searchform",
         ) as HTMLFormElement;
-        this.wordForms = this.querySelector("ul.wordforms") as HTMLElement;
+        this.wordForms = shadow.getElementById("wordforms") as HTMLElement;
     }
 
     async connectedCallback(this: FlairFST) {
@@ -146,15 +391,14 @@ class FlairFST extends HTMLElement {
     handleInputKey(this: FlairFST, evt: KeyboardEvent) {
         let nextItem = null;
         switch (evt.key) {
-            // Do not allow this!
+            // Do not allow this, it breaks the FST and cannot be escaped for Reasons
             case ".":
                 evt.preventDefault();
                 break;
             case "ArrowDown":
             case "Down":
                 if (this.currentItem === null) {
-                    const datalist = document.getElementById("wordforms")!;
-                    nextItem = datalist.firstElementChild as HTMLElement;
+                    nextItem = this.wordForms.firstElementChild as HTMLElement;
                 } else {
                     nextItem = this.currentItem.nextElementSibling as HTMLElement;
                 }
@@ -191,18 +435,40 @@ class FlairFST extends HTMLElement {
             case "Escape":
             case "Esc":
                 // Close the dropdown
-                const datalist = document.getElementById("wordforms")!;
-                datalist.replaceChildren();
+                this.wordForms.replaceChildren();
                 this.currentItem = null;
                 break;
             case "Enter":
-                if (evt.key == "Enter" && this.currentItem !== null)
+                if (evt.key == "Enter" && this.currentItem !== null) {
                     this.wordBox.value = this.currentItem.innerText;
+                    this.searchForm.dispatchEvent(new Event("submit"));
+                }
                 break;
         }
     }
 
     handleSubmit(this: FlairFST, evt: SubmitEvent) {
+        if (this.morphology === null || this.orthography === null) return;
+
+        // Search (approximately) for the thing we entered
+        const text = this.wordBox.value.trim().normalize("NFC");
+
+        // FIXME: Should use weights here, but for the moment we will
+        // first try to analyze the exact input (that is pretty fast)
+        let iter = apply(this.morphology, text, "up").next();
+        if (iter.done) {
+            const approxForm = project(
+                compose(linearFST(text, this.morphology.s), this.orthography),
+                "down",
+            );
+            const approxMatch = compose(this.morphology, approxForm);
+            iter = generate(approxMatch).next();
+        }
+        if (!iter.done) this.wordBox.value = iter.value[1];
+        this.makeIGT();
+        // Close the dropdown
+        this.wordForms.replaceChildren();
+        this.currentItem = null;
         // Don't actually submit the form
         evt.preventDefault();
     }
@@ -218,10 +484,7 @@ class FlairFST extends HTMLElement {
         const text = this.wordBox.value.trim().normalize("NFC"); // extract the word from the search box
         this.morphBox.replaceChildren(); // remove children nodes from the morphbox element
         for (const [morph, form] of apply(this.morphology, text, "up")) {
-            // apply() applies the FST rules to an input,
-            // special case of '.' because of pyfoma
-            // (https://github.com/mhulden/pyfoma/issues/13)
-            const article = this.makeArticle(morph.replace("D", "."), form);
+            const article = this.makeArticle(morph, form);
             this.morphBox.appendChild(article);
         }
     }
@@ -282,7 +545,8 @@ class FlairFST extends HTMLElement {
         // more difficult to do with the current FST setup.
         const morphs: Array<string> = [];
         const glosses: Array<Gloss> = [];
-        const morphrx = /([-=][^-=]+)/g;
+        // FIXME: This simply does not work for prefixes
+        const morphrx = /([=+-][^=+-]+)/g;
 
         if (this.glossary === null) return { morphs: morphs, glosses: glosses };
         const morphRegexMatches = [...morph.matchAll(morphrx)];
@@ -320,8 +584,7 @@ class FlairFST extends HTMLElement {
     ): HTMLDivElement {
         const formRow = createDivElement("igtrow");
         formRow.classList.add("form-row");
-        const formEl = document.createElement("div");
-        formEl.classList.add("form-row-word");
+        const formEl = createDivElement("form-row-word");
         formRow.appendChild(formEl);
 
         if (ref !== null) {
@@ -333,18 +596,15 @@ class FlairFST extends HTMLElement {
             formEl.append(form);
 
             const validationIconImage = document.createElement("img");
-            console.log(generatedIcon);
             validationIconImage.src = generatedIcon;
             validationIconImage.alt = "Experimentally Generated";
             validationIconImage.classList.add("validation-icon");
 
-            const tooltip = document.createElement("div");
-            tooltip.classList.add("tooltip");
+            const tooltip = createDivElement("tooltip");
             tooltip.textContent = "Experimentally generated";
 
             // Create the triangle element
-            const triangle = document.createElement("div");
-            triangle.classList.add("triangle");
+            const triangle = createDivElement("triangle");
 
             // Add hover event listeners to show/hide the tooltip
             validationIconImage.addEventListener("mouseenter", () => {
@@ -365,12 +625,6 @@ class FlairFST extends HTMLElement {
             iconContainer.appendChild(tooltip);
             formRow.appendChild(iconContainer);
         }
-
-        // Make and add a horizontal divider line below the word displayed by the form-row-word element
-        const dividerLine = document.createElement("hr");
-        dividerLine.classList.add("form-row-divider");
-        formRow.append(dividerLine);
-
         return formRow;
     }
 

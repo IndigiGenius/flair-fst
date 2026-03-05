@@ -4,18 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>FLAIR-FST</title>
-    <style type="text/css">
-    </style>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>FLAIR-FST</h1>
+    <h1 class="header">FLAIR-FST</h1>
     <main>
-      <flair-fst base="./tests/data/example.flairfst">
-        <form class="searchform">
-          <input type="search" role="combobox" placeholder="Enter a word..." class="wordbox" autocomplete="off" />
-          <ul role="listbox" class="wordforms"></ul>
-        </form>
-      <div class="morphbox"></div>
+      <flair-fst base="./tests/data/example.flairfst"></flair-fst>
       </flair-fst>
     </main>
     <script type="module" src="./js/flair-fst.ts"></script>
