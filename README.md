@@ -1,19 +1,27 @@
 # FLAIR-FST: Tools for building lexicons and/or morphological analysers
 
+FLAIR-FST is (yet another) tool to build lexicons and morphological
+analysers for natural language.
+
+Its goals are similar to [GiellaLT](https://giellalt.uit.no) and
+[Gramble](https://nrc-cnrc.github.io/gramble/), but its focus is on:
+
+- A simplified workflow to create lexicons from tables of data (like
+  Gramble), but...
+- Output as WFST for use in speech recognizers and other NLP tools
+  (like GiellaLT), but...
+- Using the friendlier rule language used in
+  [Pyfoma](https://github.com/mhulden/pyfoma), and...
+- With a web component for querying the resulting lexicon, and...
+- A Javascript runtime that can be used to build applications from
+  your WFST running directly in the browser.
+
+Please note that its AGPL-3.0 license requires you to publish source
+code under a compatible license for any application you build with it!
+
 ## Quick Start
 
-To launch notebooks for experimentation and documentation:
-
-```console
-hatch run notebooks:lab
-```
-
-To launch the viewer (follow the instructions to access with your browser):
-
-```
-npm install
-npm start
-```
+TODO
 
 ## Introduction
 
@@ -23,10 +31,11 @@ and spell-checking.
 
 There are generally three phases to creating a lexicon, you will:
 
-- *Define* words, morphemes, spelling rules and approximate search rules
+- *Define* words, morphemes, spelling rules and approximate search
+  rules.
 - *Compile* to a weighted finite-state transducer (a model for fast,
-  approximate look-up)
-- *Test* the resulting model
+  approximate look-up).
+- *Test* the resulting model.
 
 ## Define a lexicon
 
@@ -46,18 +55,29 @@ A FLAIR-FST lexicon consists of four JSON files:
   each word to a morphological analyisis.  This is built from the list
   of words (and morphemes) as well as a set of *alternation rules*.
 
+You almost certainly **do not** want to create these files yourself,
+however!  Instead, you will *define* them through lists of:
+
+- Words
+- Prefixes
+- Stems
+- Suffixes
+- Rules
+
+This definition is then *compiled* to produce the data files noted
+above.  We provide several ways to create the definition of your lexicon.
+
 ### From a spreadsheet
 
-While it is theoretically possible to construct these yourself (they
-do have JSON schemas, so you can even edit them easily in VS.Code or
-another intelligent editor) we provide a means to build them from a
-spreadsheet, for easier editing.  A template spreadsheet in
-OpenDocument format is provided which contains a trivial example
-lexicon (French words with glosses in English and Spanish) and some
-basic alternation rules.
+You can find the templates in `src/flair_fst/templates`, or, from the
+command-line, you can create a copy of the template with:
 
-Once you have such a spreadsheet, you can run the command-line
-interface to convert it to a lexicon:
+```console
+flair-fst new sample.ods
+```
+
+Once you have added the necessary content to the lexicon, you can run
+the command-line interface to convert it to a lexicon:
 
 ```console
 flair-fst compile sample.ods
@@ -68,15 +88,35 @@ This will create (provided it doesn't already exist) the directory
 test set in your spreadsheet (see the worksheet "Tests"), then these
 tests will also be run, and any failures will be reported
 
-Provided all your tests have passed, you can now query the lexicon in
-your browser with:
+### From CSV data files
+
+Alternately, a lexicon can be defined from a set of CSV files.  These
+are simply the data from the sheets in the spreadsheet, but the format
+may be more portable and easier to create programmatically.  As above,
+you can use `flair-fst new` to create such a directory - if no
+extension is provided to its argument, it assumes that this is what
+you want to do:
+
+```console
+flair-fst new sample
+```
+
+### From Python code
+
+The data structures used to define a lexicon are defined in the
+`flair_fst.compile.definition` module.
+
+## Querying a lexicon in a web browser
+
+If you've created a lexicon in `sample.flairfst`, you can view it in a
+web browser using:
 
 ```console
 flair-fst run sample.flairfst
 ```
 
 To produce a standalone HTML file which you can share, that can simply
-be opened from the explorer, you can run:
+be opened from the Finder, Explorer or other file manager, you can run:
 
 ```console
 flair-fst html sample.flairfst
@@ -84,16 +124,20 @@ flair-fst html sample.flairfst
 
 By default this will create `sample.html`.
 
-### From a MinCourse
+## Using the FLAIR-FST web component
 
-If you have created a minimal course in the [MinCourse
-XML](https://github.com/IndigiGenius/MinCourse) format, a template
-spreadsheet or an initial lexicon can also be induced from the words
-and glosses used there.
+FLAIR-FST also includes a web component that can be used in your own
+web pages.  To include the lexicon search and browsing component,
+simply copy the file `js/flair-fst.js` to the same directory as your
+web page.  Assuming that your lexicon is called `sample.flairfst` and
+you have also copied it to this directory, you can add this snippet to
+the HTML code:
 
-```console
-flair-fst derive sample.mincourse.xml
+```html
+<script type="module" src="flair-fst.js"></script>
+<flair-fst base="sample.flairfst"></flair-fst>
 ```
+
 
 ## License
 
@@ -104,4 +148,6 @@ later version.
 Some code in `flair_fst.rustfst` is derived from
 [rustfst](https://docs.rs/rustfst/latest/rustfst/) and
 [pyfoma](https://mhulden.github.io/pyfoma/) and is distributed under
-the terms of the [Apache-2.0](https://spdx.org/licenses/MIT) license.
+the terms of the [Apache-2.0](https://spdx.org/licenses/Apache-2.0)
+license.  This code is clearly marked with comments indicating this
+licensing difference.
