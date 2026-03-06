@@ -33,6 +33,8 @@ def new_command(args: argparse.Namespace) -> None:
         convert_to_csvs(template, args.output)
     elif args.output.suffix.lower() == ".ods":
         shutil.copy(template, args.output)
+    elif args.output.suffix.lower() == ".xlsx":
+        shutil.copy(template.with_suffix(".xlsx"), args.output)
     else:
         raise RuntimeError(
             f"Unrecognized or unsupported extension {args.output.suffix}"
