@@ -10,3 +10,4 @@ notebooks/FST.pdf
 package-lock.json
 acceptor.dot
 *\#
+/dist

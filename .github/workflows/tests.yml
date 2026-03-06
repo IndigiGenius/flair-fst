@@ -10,17 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-            ~/.cache/pip/
-            .mypy_cache
-          key: ${{ runner.os }}-${{ hashFiles('**/Cargo.lock', '**/pyproject.toml') }}
+      - name: Cache all the things
+        uses: ./.github/actions/cache-all-the-things
       - name: Install Hatch
         uses: pypa/hatch@install
       - name: Check types with mypy
@@ -30,17 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-            ~/.cache/pip/
-            .mypy_cache
-          key: ${{ runner.os }}-${{ hashFiles('**/Cargo.lock', '**/pyproject.toml') }}
+      - name: Cache all the things
+        uses: ./.github/actions/cache-all-the-things
       - name: Install Hatch
         uses: pypa/hatch@install
       - name: Run tests

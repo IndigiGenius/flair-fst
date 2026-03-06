@@ -1,4 +1,5 @@
-import { FST, apply_up, apply_down, compose, paradigm, linearFST } from "./jsfoma.js";
+import { FST } from "./jsfoma.zod.js";
+import { apply_up, apply_down, compose, paradigm, linearFST } from "./jsfoma.js";
 import { it } from "mocha";
 import { assert } from "chai";
 
