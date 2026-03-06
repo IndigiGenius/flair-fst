@@ -19,6 +19,7 @@ import {
     linearFST,
     project,
 } from "./jsfoma.js";
+// @ts-ignore
 import generatedIcon from "./generated-icon.png";
 
 class FlairFST extends HTMLElement {
