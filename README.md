@@ -145,9 +145,11 @@ the HTML code:
 3.0](https://spdx.org/licenses/AGPL-3.0-or-later.html) license, or any
 later version.
 
-Some code in `flair_fst.rustfst` is derived from
+The code in `flair_fst.rustfst` is largely derived from
 [rustfst](https://docs.rs/rustfst/latest/rustfst/) and
 [pyfoma](https://mhulden.github.io/pyfoma/) and is distributed under
-the terms of the [Apache-2.0](https://spdx.org/licenses/Apache-2.0)
-license.  This code is clearly marked with comments indicating this
-licensing difference.
+the terms of either:
+
+ * Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+at your option.

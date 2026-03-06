@@ -173,6 +173,8 @@ def substitute_no_val_flags(fst: VectorFst) -> VectorFst:
 
 
 ## BEGIN code copied from pyfoma (as 2.0 won't make it public)
+## COPYRIGHT: Mans Hulden <mans.hulden@colorado.edu>
+## LICENSE: Apache-2.0
 
 
 def set_pos(X, y):
