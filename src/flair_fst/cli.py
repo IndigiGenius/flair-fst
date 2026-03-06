@@ -21,6 +21,24 @@ LOG = logging.getLogger("flair-fst")
 ASSETS = Path(__file__).parent / "assets"
 
 
+def new_command(args: argparse.Namespace) -> None:
+    """Create a new template spreadsheet or CSV directory."""
+    import shutil
+
+    template = ASSETS / "template.ods"
+    if args.output.suffix == "":
+        from flair_fst.compile.odf import convert_to_csvs
+
+        args.output.mkdir(exist_ok=True, parents=True)
+        convert_to_csvs(template, args.output)
+    elif args.output.suffix.lower() == ".ods":
+        shutil.copy(template, args.output)
+    else:
+        raise RuntimeError(
+            f"Unrecognized or unsupported extension {args.output.suffix}"
+        )
+
+
 def compile_command(args: argparse.Namespace) -> None:
     """Compile a spreadsheet into a WFST."""
     from flair_fst import compile_lexicon
@@ -167,6 +185,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command")
 
+    new_parser = subparsers.add_parser(
+        "new", help="Create template spreadsheet or CSV files"
+    )
+    new_parser.add_argument(
+        "output",
+        type=Path,
+        help="Path to new template, with format determined by extension",
+    )
+    new_parser.set_defaults(func=new_command)
+
     compile_parser = subparsers.add_parser(
         "compile", help="Compile spreadsheet to WFST lexicon"
     )
@@ -212,7 +240,7 @@ def main() -> None:
 
     try:
         args.func(args)
-    except FileExistsError as e:
+    except (FileExistsError, RuntimeError) as e:
         parser.error(str(e))
 
 
