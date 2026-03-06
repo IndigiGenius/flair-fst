@@ -17,6 +17,7 @@ from typing import (
 
 SEMIRE = re.compile(r"\s+;\s+")
 GLOSSRE = re.compile(r"gloss(?:\s+(.*))?")
+MDLINKRE = re.compile(r"\[[^\]]+\]\(([^\)]+)\)")
 
 
 @dataclass
@@ -200,8 +201,14 @@ def bibliography_from_table(table: Iterable[Dict[str, str]]):
     bibliography = {}
     for row in table:
         abbrev = row["abbreviation"]
+        # odfdo markdown-ifies links and there's no way to
+        # stop it, so un-markdown them here
+        url = row["url"]
+        if m := MDLINKRE.match(url):
+            url = m[1]
+        url = url.strip("/")  # for some reason Excel begs to differ
         bibliography[abbrev] = BibliographyRecord(
-            url=row["url"],
+            url=url,
             citation=row["citation"],
             page_offset=int(row["page offset"]) if row["page offset"] else 0,
         )

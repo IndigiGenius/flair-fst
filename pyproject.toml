@@ -30,6 +30,7 @@ classifiers = [
 dependencies = [
   "pyfoma>=1.0.7",
   "odfdo",
+  "openpyxl",
 ]
 
 [project.urls]

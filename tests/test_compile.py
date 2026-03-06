@@ -24,6 +24,14 @@ def test_load_csv(defn) -> None:
     assert csv_defn == defn
 
 
+def test_load_xlsx(defn) -> None:
+    """Test loading from XLSXs."""
+    from flair_fst.compile.xlsx import load_definition as load_xlsx_definition
+
+    xlsx_defn = load_xlsx_definition(TESTDIR / "example.xlsx")
+    assert xlsx_defn == defn
+
+
 def test_load_ods(defn) -> None:
     """Test basic loading from ODS."""
     assert defn.stems
