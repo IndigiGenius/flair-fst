@@ -37,6 +37,30 @@ def compile_command(args: argparse.Namespace) -> None:
 
 def run_command(args: argparse.Namespace) -> None:
     """Run a WFST in the browser."""
+    import webbrowser
+    import threading
+    from http.server import SimpleHTTPRequestHandler, HTTPServer
+    from pathlib import Path
+
+    assets = Path(__file__).parent / "assets"
+
+    class CustomHTTPRequestHandler(SimpleHTTPRequestHandler):
+        def __init__(self, *_args, **_kwargs):
+            super().__init__(*_args, directory=assets, **_kwargs)
+
+        def translate_path(self, path):
+            path = super().translate_path(path)
+            before, _, after = path.partition("@LEXICON@/")
+            if after:
+                lexpath = (args.lexdir / Path(after)).resolve()
+                return str(lexpath)
+            return path
+
+    address = "127.0.0.1"
+    server = HTTPServer((address, args.port), CustomHTTPRequestHandler)
+    server_thread = threading.Thread(target=server.serve_forever)
+    server_thread.start()
+    webbrowser.open(f"http://{address}:{args.port}")
 
 
 def html_command(args: argparse.Namespace) -> None:
