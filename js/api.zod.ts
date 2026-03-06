@@ -6,8 +6,8 @@ import { z } from "zod";
 
 export const GlossSchema = z.object({
     gloss: z.string(),
-    root: z.string().optional(),
-    ref: z.string().default(""),
+    form: z.string().optional(),
+    ref: z.string().optional(),
     page: z.string().optional(),
 });
 export type Gloss = z.infer<typeof GlossSchema>;

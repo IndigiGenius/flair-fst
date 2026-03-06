@@ -10,10 +10,15 @@ and from its REST API.
 """
 
 import argparse
+import html
+import json
 import logging
 from pathlib import Path
+from typing import TextIO
+from flair_fst.models import Bibliography, Glossary
 
 LOG = logging.getLogger("flair-fst")
+ASSETS = Path(__file__).parent / "assets"
 
 
 def compile_command(args: argparse.Namespace) -> None:
@@ -64,11 +69,98 @@ def run_command(args: argparse.Namespace) -> None:
 
 
 def html_command(args: argparse.Namespace) -> None:
-    """Compile a WFST into a standalone HTML tool."""
+    """Compile a WFST into a standalone HTML tool.
+
+    This tool is also formatted semantically such that the glossary
+    and bibliography can be viewed without the accompanying
+    Javascript code to run the WFST.
+    """
+    if args.output is None:
+        args.output = args.input.with_suffix(".html")
+
+    # Split the HTML in a few places (this is a bit fragile, take care
+    # not to reformat it!)
+    html = (ASSETS / "index.html").read_text(encoding="utf-8")
+    with open(args.output, "w", encoding="utf-8") as outfh:
+        before, _, html = html.partition('<link rel="stylesheet" href="style.css" />')
+        outfh.write(before)
+        outfh.write('<style type="text/css">\n')
+        outfh.write((ASSETS / "style.css").read_text(encoding="utf-8"))
+        outfh.write("</style>\n")
+        before, _, html = html.partition(
+            '<script type="module" src="flair-fst.js"></script>'
+        )
+        outfh.write(before)
+        outfh.write('<script type="module">\n')
+        outfh.write((ASSETS / "flair-fst.js").read_text(encoding="utf-8"))
+        outfh.write("</script>\n")
+        before, _, html = html.partition('<flair-fst base="@LEXICON@"></flair-fst>')
+        outfh.write(before)
+        outfh.write("""<flair-fst>
+        <script class="orthography" type="application/json">
+""")
+        # TODO: Escape comments and script tags (**very** unlikely to
+        # happen), see
+        # https://html.spec.whatwg.org/multipage/scripting.html#restrictions-for-contents-of-script-elements
+        outfh.write((args.input / "orthography.json").read_text(encoding="utf-8"))
+        outfh.write("""
+        </script>
+        <script class="morphology" type="application/json">
+""")
+        outfh.write((args.input / "morphology.json").read_text(encoding="utf-8"))
+        outfh.write("""
+        </script>""")
+        # Glossary and bibliography are formatted as <dl>
+        with open(args.input / "glossary.json") as infh:
+            # TODO: validate with Pydantic if necessary
+            glossary: Glossary = json.load(infh)
+            make_dl_glossary(glossary, outfh)
+        with open(args.input / "bibliography.json") as infh:
+            # TODO: validate with Pydantic if necessary
+            bibliography: Bibliography = json.load(infh)
+            make_dl_bibliography(bibliography, outfh)
+        outfh.write("""
+        </flair-fst>""")
+        outfh.write(html)
 
 
-def derive_command(args: argparse.Namespace) -> None:
-    """Derive a spreadsheet from a MinCourse."""
+def make_dl_glossary(glossary: Glossary, outfh: TextIO) -> None:
+    outfh.write("""
+    <dl class="glossary">""")
+    for morph, glosses in glossary.items():
+        outfh.write(f"""
+        <dt>{html.escape(morph)}</dt> """)
+        for lang, gloss in glosses.items():
+            tag = "<dd"
+            if lang != "_default":
+                tag += f' lang="{html.escape(lang)}"'
+            if ref := gloss.get("ref"):
+                tag += f' data-ref="{html.escape(ref)}"'
+            if page := gloss.get("page"):
+                tag += f' data-page="{html.escape(page)}"'
+            if form := gloss.get("form"):
+                tag += f' data-form="{html.escape(form)}"'
+            tag += ">"
+            outfh.write(f"""
+        {tag}{html.escape(gloss["gloss"])}</dd>""")
+    outfh.write("""
+    </dl>""")
+
+
+def make_dl_bibliography(bibliography: Bibliography, outfh: TextIO) -> None:
+    outfh.write("""
+    <dl class="bibliography">""")
+    for abbrev, defn in bibliography.items():
+        outfh.write(f"""
+        <dt>{html.escape(abbrev)}</dt>""")
+        if url := defn.get("url"):
+            outfh.write(f"""
+        <dd data-page-offset="{defn["pageOffset"]}"><a href="{url}">{html.escape(defn["citation"])}</a></dd>""")
+        else:
+            outfh.write(f"""
+        <dd data-page-offset="{defn["pageOffset"]}">{html.escape(defn["citation"])}</dd>""")
+    outfh.write("""
+    </dl>""")
 
 
 def main() -> None:
@@ -111,15 +203,6 @@ def main() -> None:
         "-o", "--output", type=Path, help="Output HTML file (optional)"
     )
     html_parser.set_defaults(func=html_command)
-
-    derive_parser = subparsers.add_parser(
-        "derive", help="Derive spreadsheet from MinCourse"
-    )
-    derive_parser.add_argument("input", type=Path, help="Input in MinCourse XML format")
-    derive_parser.add_argument(
-        "-o", "--output", type=Path, help="Output spreadsheet file (optional)"
-    )
-    derive_parser.set_defaults(func=derive_command)
 
     args = parser.parse_args()
 

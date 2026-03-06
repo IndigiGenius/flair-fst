@@ -295,7 +295,7 @@ a.ref {
         if (baseURI) {
             await this.loadFromURI(baseURI);
         } else {
-            // TODO: Load from embedded data (JSON or otherwise)
+            this.loadFromHTML();
         }
         this.initUI();
     }
@@ -320,6 +320,24 @@ a.ref {
         if (response.ok) {
             this.glossary = GlossarySchema.parse(await response.json());
         }
+    }
+
+    /**
+     * Load FST data from HTML <script> and <dl> elements.
+     */
+    loadFromHTML(this: FlairFST) {
+        const orthoscript = this.querySelector("script.orthography");
+        if (orthoscript)
+            this.orthography = FSTSchema.parse(JSON.parse(orthoscript.textContent));
+        const morphoscript = this.querySelector("script.morphology");
+        if (morphoscript)
+            this.morphology = FSTSchema.parse(JSON.parse(morphoscript.textContent));
+        const biblist = this.querySelector("dl.bibliography")
+        if (biblist)
+            this.bibliography = biblioFromHTML(biblist);
+        const glist = this.querySelector("dl.glossary")
+        if (glist)
+            this.glossary = glossaryFromHTML(glist);
     }
 
     /**
@@ -750,4 +768,70 @@ function createDivElement(className: string): HTMLDivElement {
     const element = document.createElement("div");
     element.setAttribute("class", className);
     return element;
+}
+
+
+/**
+ * Create Bibliography from DOM elements.
+ */
+function biblioFromHTML(biblist: HTMLElement): Bibliography {
+    const bibliography: Bibliography = {};
+    let key: string | null = null;
+    for (const el of biblist.children) {
+        switch (el.tagName) {
+        case "DT":
+            key = el.textContent.trim() || null;
+            break;
+        case "DD":
+            if (key === null) {
+                console.log(`Missing key for bibliography entry: ${el}`);
+                continue;
+            }
+            const pageOffset = parseInt(el.getAttribute("data-page-offset") || "0");
+            const citation = el.textContent.trim();
+            const link = el.querySelector("a");
+            const url = link ? link.getAttribute("href") : null;
+            if (url)
+                bibliography[key] = {pageOffset, citation, url}
+            else
+                bibliography[key] = {pageOffset, citation}
+            break;
+        }
+    }
+    return bibliography;
+}
+
+/**
+ * Create Glossary from DOM elements.
+ */
+function glossaryFromHTML(glist: HTMLElement): Glossary {
+    const glossary: Glossary = {};
+    let key: string | null = null;
+    for (const el of glist.children) {
+        switch (el.tagName) {
+        case "DT":
+            key = el.textContent.trim() || null;
+            if (key)
+                glossary[key] = {};
+            break;
+        case "DD":
+            if (key === null) {
+                console.log(`Missing key for glossary entry: ${el}`);
+                continue;
+            }
+            const lang = el.getAttribute("lang") || "_default";
+            const gloss = el.textContent.trim() || "";
+            glossary[key][lang] = {gloss};
+            const ref = el.getAttribute("data-ref");
+            if (ref)
+                glossary[key][lang].ref = ref;
+            const form = el.getAttribute("data-form");
+            if (form)
+                glossary[key][lang].form = form;
+            const page = el.getAttribute("data-page");
+            if (page)
+                glossary[key][lang].page = page;
+        }
+    }
+    return glossary;
 }

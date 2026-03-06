@@ -25,7 +25,7 @@ def make_glossary(defn: Definition) -> Glossary:
         for lang, text in entry.glosses.items():
             # form, base for words and morph, form for others
             morph, form = entry[0:2]
-            gloss = Gloss(gloss=text, form=entry[1])
+            gloss = Gloss(gloss=text, form=form)
             if entry.ref:
                 gloss["ref"] = entry.ref
             if entry.page is not None:
