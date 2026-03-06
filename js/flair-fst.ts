@@ -327,10 +327,10 @@ a.ref {
      */
     loadFromHTML(this: FlairFST) {
         const orthoscript = this.querySelector("script.orthography");
-        if (orthoscript)
+        if (orthoscript && orthoscript.textContent)
             this.orthography = FSTSchema.parse(JSON.parse(orthoscript.textContent));
         const morphoscript = this.querySelector("script.morphology");
-        if (morphoscript)
+        if (morphoscript && morphoscript.textContent)
             this.morphology = FSTSchema.parse(JSON.parse(morphoscript.textContent));
         const biblist = this.querySelector("dl.bibliography")
         if (biblist)
@@ -676,7 +676,7 @@ a.ref {
      * Make a reference element with possible link.
      */
     makeRef(this: FlairFST, gloss: Gloss): Node {
-        if (this.bibliography === null || !(gloss.ref in this.bibliography))
+        if (!gloss.ref || this.bibliography === null || !(gloss.ref in this.bibliography))
             return document.createTextNode("");
         const source = this.bibliography[gloss.ref];
         let url = source.url;
@@ -774,13 +774,13 @@ function createDivElement(className: string): HTMLDivElement {
 /**
  * Create Bibliography from DOM elements.
  */
-function biblioFromHTML(biblist: HTMLElement): Bibliography {
+function biblioFromHTML(biblist: Element): Bibliography {
     const bibliography: Bibliography = {};
     let key: string | null = null;
     for (const el of biblist.children) {
         switch (el.tagName) {
         case "DT":
-            key = el.textContent.trim() || null;
+            key = el.textContent?.trim() || null;
             break;
         case "DD":
             if (key === null) {
@@ -788,7 +788,7 @@ function biblioFromHTML(biblist: HTMLElement): Bibliography {
                 continue;
             }
             const pageOffset = parseInt(el.getAttribute("data-page-offset") || "0");
-            const citation = el.textContent.trim();
+            const citation = el.textContent?.trim() || "";
             const link = el.querySelector("a");
             const url = link ? link.getAttribute("href") : null;
             if (url)
@@ -804,13 +804,13 @@ function biblioFromHTML(biblist: HTMLElement): Bibliography {
 /**
  * Create Glossary from DOM elements.
  */
-function glossaryFromHTML(glist: HTMLElement): Glossary {
+function glossaryFromHTML(glist: Element): Glossary {
     const glossary: Glossary = {};
     let key: string | null = null;
     for (const el of glist.children) {
         switch (el.tagName) {
         case "DT":
-            key = el.textContent.trim() || null;
+            key = el.textContent?.trim() || null;
             if (key)
                 glossary[key] = {};
             break;
@@ -820,7 +820,7 @@ function glossaryFromHTML(glist: HTMLElement): Glossary {
                 continue;
             }
             const lang = el.getAttribute("lang") || "_default";
-            const gloss = el.textContent.trim() || "";
+            const gloss = el.textContent?.trim() || "";
             glossary[key][lang] = {gloss};
             const ref = el.getAttribute("data-ref");
             if (ref)
