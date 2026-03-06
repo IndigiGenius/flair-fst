@@ -10,12 +10,13 @@ from flair_fst import RLG, RLGEntry
 from .definition import Definition, MorphDefinition
 
 
-def make_pair(m: MorphDefinition) -> Tuple[str, str]:
+def make_pair(m: MorphDefinition, final: bool = False) -> Tuple[str, str]:
     """Make the transduction pair for a morph including flags"""
+    f = "" if final else "#"
     if not m.flags:
-        return (m.morph, m.form)
+        return (m.morph + f, m.form)
     tagtext = "".join(f"'[[{flag}]]'" for flag in m.flags)
-    return (f"{m.morph}{tagtext}", f"{m.form}{tagtext}")
+    return (f"{m.morph}{tagtext}{f}", f"{m.form}{tagtext}")
 
 
 def make_rlg(defn: Definition) -> RLG:
@@ -47,12 +48,12 @@ def make_rlg(defn: Definition) -> RLG:
     continuation = suffix_names[0]
     sublex = []
     for m in defn.stems:
-        sublex.append((make_pair(m), continuation))
+        sublex.append((make_pair(m, final=(continuation == "#")), continuation))
     lex["stems"] = sublex
     for name, continuation in itertools.pairwise(suffix_names):
         sublex = [("", continuation)]
         for m in defn.suffixes[name]:
-            sublex.append((make_pair(m), continuation))
+            sublex.append((make_pair(m, final=(continuation == "#")), continuation))
         lex[name] = sublex
     return lex
 

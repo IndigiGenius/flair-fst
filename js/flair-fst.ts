@@ -564,29 +564,15 @@ a.ref {
         // more difficult to do with the current FST setup.
         const morphs: Array<string> = [];
         const glosses: Array<Gloss> = [];
-        // FIXME: This simply does not work for prefixes
-        const morphrx = /([=+-][^=+-]+)/g;
 
         if (this.glossary === null) return { morphs: morphs, glosses: glosses };
-        const morphRegexMatches = [...morph.matchAll(morphrx)];
-        // let morphRegexMatch = morphrx.exec(morph);
-        if (morphRegexMatches.length > 0) {
-            // Extract the root, add it to `morphs` and add its gloss if one exists
-            const root = morph.substring(0, morphRegexMatches[0].index);
-            morphs.push(root);
+        // Split into component morphemes with the magical boundary
+        for (const part of morph.split("#")) {
+            if (part == "")
+                continue;
+            morphs.push(part);
             // TODO: handle i18n here and below
-            glosses.push(this.glossary[root]?._default ?? root);
-
-            // Process the regex matches in the morph
-            for (const match of morphRegexMatches) {
-                const ending = match[0];
-                morphs.push(ending);
-                glosses.push(this.glossary[ending]?._default ?? ending);
-            }
-        } else {
-            // Handle the case with no regex matches
-            morphs.push(morph);
-            glosses.push(this.glossary[morph]?._default ?? morph);
+            glosses.push(this.glossary[part]?._default ?? part);
         }
         return { morphs: morphs, glosses: glosses };
     }

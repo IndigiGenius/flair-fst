@@ -49,9 +49,9 @@ def test_lexicon(defn) -> None:
     assert "stems" in rlg
     fsg = make_lexicon(defn)
     assert list(fsg.apply("démarche")) == ["démarche"]
-    assert list(fsg.apply("manger+1pl")) == ["mang-+ons"]
+    assert list(fsg.apply("manger#+1pl")) == ["mang-+ons"]
     # Make sure flags work
-    assert list(fsg.apply("dé-gagner+1sg")) == []
+    assert list(fsg.apply("dé-#gagner+#1sg")) == []
 
 
 def test_rules(defn) -> None:
@@ -101,5 +101,5 @@ def test_full_compile(defn) -> None:
     lex = compile(defn)
     for up, down in pairs(lex):
         print(up, down)
-    assert "mangons" not in lex.apply("manger+1pl")
-    assert "mangeons" in lex.apply("manger+1pl")
+    assert "mangons" not in lex.apply("manger#+1pl")
+    assert "mangeons" in lex.apply("manger#+1pl")
