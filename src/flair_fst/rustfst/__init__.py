@@ -7,7 +7,6 @@ import operator
 import re
 from collections import deque
 from functools import reduce
-from pathlib import Path
 from typing import Collection, Dict, Iterator, Sequence, Set, Tuple, Union, cast
 
 from pyfoma import FST, State
@@ -40,7 +39,7 @@ __all__ = [
     "pairs",
 ]
 
-LOGGER = logging.getLogger(Path(__file__).stem)
+LOG = logging.getLogger(__name__)
 
 
 def get_labels_from_label(label: str) -> Tuple[str, str]:
@@ -132,7 +131,7 @@ def pyfoma2rust(
                 vfst.add_tr(state_id, Tr(ilabel, olabel, arc.weight, target_id))
     for s in fst.finalstates:
         if s not in statenums:
-            LOGGER.warning("Final state %r is not accessible", s)
+            LOG.warning("Final state %r is not accessible", s)
         else:
             vfst.set_final(statenums[s], s.finalweight)
     # Do this after creating the symbol tables as it becomes immutable

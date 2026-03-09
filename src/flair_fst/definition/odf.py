@@ -14,7 +14,7 @@ from odfdo import Document
 from flair_fst import Definition
 from flair_fst.definition.csv import load_definition as load_csv_definition
 
-LOGGER = logging.getLogger(Path(__file__).stem)
+LOG = logging.getLogger(__name__)
 
 
 def convert_to_csvs(path: Union[str, PathLike], outdir: Union[str, PathLike]) -> None:
