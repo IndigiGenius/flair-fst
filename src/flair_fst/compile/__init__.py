@@ -18,7 +18,7 @@ def compile(defn: Definition) -> FST:
     lex: FST = make_lexicon(defn).eliminate_flags()  # type: ignore
     rules = make_rules(defn)
     for name, rule in rules.items():
-        lex.compose(rule)
+        lex.compose(rule)  # type: ignore
     return lex
 
 
