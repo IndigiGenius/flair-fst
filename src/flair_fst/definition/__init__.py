@@ -78,9 +78,9 @@ class Definition:
         raise RuntimeError(f"Unknown or unsupported file extension: {path}")
 
     def compile(self) -> "FST":
-        from flair_fst.compile import compile
+        from flair_fst.compile import rusty_compile
 
-        return compile(self)
+        return rusty_compile(self)
 
 
 class WordDefinition(NamedTuple):

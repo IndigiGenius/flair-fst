@@ -53,7 +53,9 @@ def compile_command(args: argparse.Namespace) -> None:
 
     compile_lexicon(defn, args.output)
     if not args.no_test:
-        test_lexicon(defn, args.output)
+        errors = test_lexicon(defn, args.output)
+        for testcase in errors:
+            LOG.error("Test case failed: %r", testcase)
 
 
 def run_command(args: argparse.Namespace) -> None:

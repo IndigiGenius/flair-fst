@@ -14,6 +14,18 @@ def compile(defn: Definition) -> FST:
     """Compile an FST from a definition."""
     from flair_fst.compile.lexicon import make_lexicon
     from flair_fst.compile.rules import make_rules
+
+    lex: FST = make_lexicon(defn).eliminate_flags()  # type: ignore
+    rules = make_rules(defn)
+    for name, rule in rules.items():
+        lex.compose(rule)
+    return lex
+
+
+def rusty_compile(defn: Definition) -> FST:
+    """Compile an FST from a definition."""
+    from flair_fst.compile.lexicon import make_lexicon
+    from flair_fst.compile.rules import make_rules
     from flair_fst.rustfst import (
         eliminate_flags,
         pyfoma2rust,
@@ -25,7 +37,7 @@ def compile(defn: Definition) -> FST:
     )
 
     start = time.time()
-    lex: FST = make_lexicon(defn).eliminate_flags()  # type: ignore
+    lex: FST = make_lexicon(defn)
     LOG.info("Make lexicon: %.1fms", (time.time() - start) * 1000)
     start = time.time()
     rules = make_rules(defn)
