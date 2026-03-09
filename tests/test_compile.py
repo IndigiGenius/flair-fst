@@ -77,8 +77,6 @@ def test_rules(defn) -> None:
 def test_symbols(defn) -> None:
     """Verify the treatment of multi-character symbols."""
     assert "gn" in defn.multichar_symbols
-    assert "+inf" in defn.multichar_symbols
-    assert "dé-" not in defn.multichar_symbols
     from flair_fst.compile.lexicon import make_lexicon
 
     fsg = make_lexicon(defn)

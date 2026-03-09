@@ -4,6 +4,7 @@ Set of tables that can be compiled into a WFST.
 The input may come as a spreadsheet (ODS or XLSX) or as a directory of CSV files.
 """
 
+import logging
 import re
 from dataclasses import dataclass
 from os import PathLike
@@ -24,6 +25,7 @@ from pyfoma import FST
 SEMIRE = re.compile(r"\s+;\s+")
 GLOSSRE = re.compile(r"gloss(?:\s+(.*))?")
 MDLINKRE = re.compile(r"\[[^\]]+\]\(([^\)]+)\)")
+LOG = logging.getLogger(__name__)
 
 
 @dataclass
@@ -39,31 +41,11 @@ class Definition:
     spelling: Dict[str, List["TargetOrthography"]]
     bibliography: Dict[str, "BibliographyRecord"]
     tests: List["TestCase"]
-    boundaries: Collection[str] = "+="
 
     @property
-    def multichar_symbols(self) -> Union[Collection[str], None]:
-        """Set of multi-chararacter symbols defined in this lexicon.
-
-        This is defived from:
-
-        - Symbols defined in the `symbols` table explicitly
-        - Prefixes ending with `+` or `=`
-        - Suffixes beginning with `+` or `=`
-        """
-        if hasattr(self, "_multichar_symbols"):
-            return self._multichar_symbols
-        self._multichar_symbols: Collection[str] = {*self.symbols.keys()}
-        for table in self.prefixes.values():
-            for morph in table:
-                if morph.morph[-1] in self.boundaries:
-                    self._multichar_symbols.add(morph.morph)
-        for table in self.suffixes.values():
-            for morph in table:
-                if morph.morph[0] in self.boundaries:
-                    self._multichar_symbols.add(morph.morph)
-
-        return self.symbols
+    def multichar_symbols(self) -> Collection[str]:
+        """Set of multi-chararacter symbols defined in this lexicon."""
+        return self.symbols.keys()
 
     @classmethod
     def from_csv(cls, path: Union[str, PathLike]) -> "Definition":
@@ -95,18 +77,10 @@ class Definition:
             return Definition.from_xlsx(path)
         raise RuntimeError(f"Unknown or unsupported file extension: {path}")
 
-    def compile(self: "Definition") -> FST:
-        """Compile an FST from a definition."""
-        from flair_fst.compile.lexicon import make_lexicon
-        from flair_fst.compile.rules import make_rules
+    def compile(self) -> "FST":
+        from flair_fst.compile import rusty_compile
 
-        lex = make_lexicon(self).eliminate_flags()  # type: ignore
-        lex = lex.epsilon_remove().determinize().minimize()
-        rules = make_rules(self)
-        for name, rule in rules.items():
-            # Ugh, pyfoma's algorithm magic causes issues here...
-            lex.compose(rule).epsilon_remove().determinize().minimize()
-        return lex
+        return rusty_compile(self)
 
 
 class WordDefinition(NamedTuple):

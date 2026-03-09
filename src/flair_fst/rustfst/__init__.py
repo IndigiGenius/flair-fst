@@ -7,22 +7,20 @@ import operator
 import re
 from collections import deque
 from functools import reduce
-from pathlib import Path
-from typing import cast, Collection, Sequence, Tuple, Union, Iterator, Set
+from typing import Collection, Dict, Iterator, Sequence, Set, Tuple, Union, cast
 
-from pyfoma import FST
-from pyfoma.flag import FlagOp, FlagStringFilter, EMPTY, FLAGRE2, FLAGRE3
+from pyfoma import FST, State
+from pyfoma.flag import EMPTY, FLAGRE2, FLAGRE3, FlagOp, FlagStringFilter
 
-
+from .drawing_config import DrawingConfig
+from .fst import Fst
+from .fst.const_fst import ConstFst
+from .fst.vector_fst import VectorFst
+from .iterators import MutableTrsIterator, StateIterator, TrsIterator
+from .string_paths_iterator import StringPathsIterator
+from .symbol_table import SymbolTable
 from .tr import Tr
 from .trs import Trs
-from .symbol_table import SymbolTable
-from .fst import Fst
-from .fst.vector_fst import VectorFst
-from .fst.const_fst import ConstFst
-from .iterators import TrsIterator, MutableTrsIterator, StateIterator
-from .drawing_config import DrawingConfig
-from .string_paths_iterator import StringPathsIterator
 
 __all__ = [
     "Tr",
@@ -41,7 +39,7 @@ __all__ = [
     "pairs",
 ]
 
-LOGGER = logging.getLogger(Path(__file__).stem)
+LOG = logging.getLogger(__name__)
 
 
 def get_labels_from_label(label: str) -> Tuple[str, str]:
@@ -79,6 +77,8 @@ def pyfoma2rust(
         update_syms = True
         for sym in sorted(fst.alphabet):
             symtab.add_symbol(sym)
+        # . must exist in the symbol table
+        symtab.add_symbol(".")
     states_with_dot_arcs = []
     used_symbols: Set[str] = set()
     while q:
@@ -131,13 +131,47 @@ def pyfoma2rust(
                 vfst.add_tr(state_id, Tr(ilabel, olabel, arc.weight, target_id))
     for s in fst.finalstates:
         if s not in statenums:
-            LOGGER.warning("Final state %r is not accessible", s)
+            LOG.warning("Final state %r is not accessible", s)
         else:
             vfst.set_final(statenums[s], s.finalweight)
     # Do this after creating the symbol tables as it becomes immutable
     vfst.set_input_symbols(symtab)
     vfst.set_output_symbols(symtab)
     return vfst
+
+
+def rust2pyfoma(rfst: VectorFst) -> FST:
+    """Convert a rustfst back to pyfoma."""
+    symtab = rfst.input_symbols()
+    if symtab is None:
+        raise ValueError("FST somehow has no symbol table?!?")
+    alphabet = set(sym for idx, sym in symtab if idx != 0)
+    alphabet.add("")
+    fst = FST(alphabet=alphabet)
+    states: Dict[int, State] = {}
+
+    def add_state(s: int) -> State:
+        if s in states:
+            return states[s]
+        states[s] = State()
+        if rfst.is_start(s):
+            fst.initialstate = states[s]
+        if rfst.is_final(s):
+            fst.finalstates.add(states[s])
+            state.finalweight = rfst.final(s)
+        fst.states.add(states[s])
+        return states[s]
+
+    for s in rfst.states():
+        assert s is not None  # WTF
+        state = add_state(s)
+        for tr in rfst.trs(s):
+            assert tr is not None  # WTF
+            target = add_state(tr.next_state)
+            ilabel = "" if tr.ilabel == 0 else symtab.find(tr.ilabel)
+            olabel = "" if tr.olabel == 0 else symtab.find(tr.olabel)
+            state.add_transition(target, (ilabel, olabel), tr.weight)
+    return fst
 
 
 def substitute_no_val_flags_symtab(symtab: SymbolTable) -> SymbolTable:
@@ -163,9 +197,9 @@ def substitute_no_val_flags(fst: VectorFst) -> VectorFst:
     """Normalize flag symbols in-place, converting `[[$FLAG]]` to
     `[[$FLAG!={}]]` and `[[!$FLAG]]` to `[[$FLAG=={}]]`"""
     isyms = fst.input_symbols() or SymbolTable()
-    assert fst.output_symbols() == isyms, (
-        "Input and output symbol tables must be shared!"
-    )
+    assert (
+        fst.output_symbols() == isyms
+    ), "Input and output symbol tables must be shared!"
     newisyms = substitute_no_val_flags_symtab(isyms)
     fst.set_input_symbols(newisyms)
     fst.set_output_symbols(newisyms)

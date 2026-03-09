@@ -27,6 +27,5 @@ def make_approx(defn: Definition) -> FST:
                 rules.append(f"({escape(approx)}) :? ({escape(glyphs)})<{cost}>")
             else:
                 rules.append(f"({escape(approx)}) :? ({escape(glyphs)})")
-    return FST.regex(
-        f"$^rewrite({' | '.join(rules)})", multichar_symbols=defn.multichar_symbols
-    )
+    syms = defn.multichar_symbols or None
+    return FST.regex(f"$^rewrite({' | '.join(rules)})", multichar_symbols=syms)

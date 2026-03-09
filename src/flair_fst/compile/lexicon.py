@@ -71,4 +71,5 @@ def make_lexicon(defn: Definition) -> FST:
 
     """
     rlg = make_rlg(defn)
-    return FST.rlg(rlg, "START", multichar_symbols=defn.multichar_symbols)
+    syms = defn.multichar_symbols or None
+    return FST.rlg(rlg, "START", multichar_symbols=syms)

@@ -15,7 +15,7 @@ from . import (
     spelling_from_table,
 )
 
-LOGGER = logging.getLogger(Path(__file__).stem)
+LOG = logging.getLogger(__name__)
 
 
 def _get_reader(directory: Path, name: str) -> Iterator[Dict[str, str]]:

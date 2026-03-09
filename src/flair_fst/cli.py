@@ -52,8 +52,10 @@ def compile_command(args: argparse.Namespace) -> None:
     args.output.mkdir(exist_ok=args.force)
 
     compile_lexicon(defn, args.output)
-    if not args.no_tests:
-        test_lexicon(defn, args.output)
+    if not args.no_test:
+        errors = test_lexicon(defn, args.output)
+        for testcase in errors:
+            LOG.error("Test case failed: %r", testcase)
 
 
 def run_command(args: argparse.Namespace) -> None:
@@ -186,6 +188,7 @@ def make_dl_bibliography(bibliography: Bibliography, outfh: TextIO) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Be verbose")
 
     new_parser = subparsers.add_parser(
         "new", help="Create template spreadsheet or CSV files"
@@ -236,6 +239,7 @@ def main() -> None:
     html_parser.set_defaults(func=html_command)
 
     args = parser.parse_args()
+    logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING)
 
     if not hasattr(args, "func"):
         parser.print_help()
