@@ -42,11 +42,7 @@ def compile(defn: Definition) -> FST:
         rlex.num_states(),
     )
     for name, rule in rules.items():
-        rsyms = rlex.input_symbols().copy()
-        for sym in rule.alphabet:
-            rsyms.add_symbol(sym)
-        rlex.set_input_symbols(rsyms)
-        rregex = pyfoma2rust(rule, symtab=rsyms)
+        rregex = pyfoma2rust(rule, symtab=rlex.input_symbols())
         rlex.tr_sort(False)
         rlex = rlex.compose(rregex)
     LOG.info(
