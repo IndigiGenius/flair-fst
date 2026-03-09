@@ -4,7 +4,9 @@ Set of tables that can be compiled into a WFST.
 The input may come as a spreadsheet (ODS or XLSX) or as a directory of CSV files.
 """
 
+import logging
 import re
+import time
 from dataclasses import dataclass
 from os import PathLike
 from pathlib import Path
@@ -24,6 +26,7 @@ from pyfoma import FST
 SEMIRE = re.compile(r"\s+;\s+")
 GLOSSRE = re.compile(r"gloss(?:\s+(.*))?")
 MDLINKRE = re.compile(r"\[[^\]]+\]\(([^\)]+)\)")
+LOG = logging.getLogger(Path(__file__).stem)
 
 
 @dataclass
@@ -79,14 +82,57 @@ class Definition:
         """Compile an FST from a definition."""
         from flair_fst.compile.lexicon import make_lexicon
         from flair_fst.compile.rules import make_rules
+        from flair_fst.rustfst import (
+            SymbolTable,
+            eliminate_flags,
+            pyfoma2rust,
+            rust2pyfoma,
+        )
+        from flair_fst.rustfst.algorithms.minimize import (
+            MinimizeConfig,
+            minimize_with_config,
+        )
 
-        lex = make_lexicon(self).eliminate_flags()  # type: ignore
-        lex = lex.epsilon_remove().determinize().minimize()
+        start = time.time()
+        lex: FST = make_lexicon(self).eliminate_flags()  # type: ignore
+        LOG.info("Make lexicon: %.1fms", (time.time() - start) * 1000)
+        start = time.time()
         rules = make_rules(self)
+        # Define the full alphabet so that '.' will work properly (we hope)
+        for rule in rules.values():
+            lex.alphabet.update(rule.alphabet)
+        LOG.info("Make rules: %.1fms", (time.time() - start) * 1000)
+        start = time.time()
+        rlex = pyfoma2rust(lex)
+        rlex = eliminate_flags(rlex)
+        LOG.info(
+            "Compile lexicon: %.1fms (%d states)",
+            (time.time() - start) * 1000,
+            rlex.num_states(),
+        )
         for name, rule in rules.items():
-            # Ugh, pyfoma's algorithm magic causes issues here...
-            lex.compose(rule).epsilon_remove().determinize().minimize()
-        return lex
+            rsyms = rlex.input_symbols().copy()
+            for sym in rule.alphabet:
+                rsyms.add_symbol(sym)
+            rlex.set_input_symbols(rsyms)
+            rregex = pyfoma2rust(rule, symtab=rsyms)
+            rlex.tr_sort(False)
+            rlex = rlex.compose(rregex)
+        LOG.info(
+            "Apply rules: %.1fms (%d states)",
+            (time.time() - start) * 1000,
+            rlex.num_states(),
+        )
+        start = time.time()
+        rlex.rm_epsilon()
+        minimize_with_config(rlex, MinimizeConfig(allow_nondet=True))
+        LOG.info(
+            "Optimize: %.1fms (%d states)",
+            (time.time() - start) * 1000,
+            rlex.num_states(),
+        )
+        # TODO: Add save to JSON functionality directly from rustfst
+        return rust2pyfoma(rlex)
 
 
 class WordDefinition(NamedTuple):
