@@ -1,9 +1,8 @@
-"""
-Convert example spreadsheets to CSVs
-"""
+"""Convert example spreadsheets to CSVs."""
 
 from pathlib import Path
-from flair_fst.compile.odf import convert_to_csvs
+
+from flair_fst.definition.odf import convert_to_csvs
 
 
 def main():

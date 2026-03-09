@@ -1,9 +1,13 @@
 """
-Types for WFST definitions found in CSV, ODF, XLSX input files.
+Set of tables that can be compiled into a WFST.
+
+The input may come as a spreadsheet (ODS or XLSX) or as a directory of CSV files.
 """
 
 import re
 from dataclasses import dataclass
+from os import PathLike
+from pathlib import Path
 from typing import (
     Collection,
     Dict,
@@ -14,6 +18,8 @@ from typing import (
     TypeGuard,
     Union,
 )
+
+from pyfoma import FST
 
 SEMIRE = re.compile(r"\s+;\s+")
 GLOSSRE = re.compile(r"gloss(?:\s+(.*))?")
@@ -58,6 +64,49 @@ class Definition:
                     self._multichar_symbols.add(morph.morph)
 
         return self.symbols
+
+    @classmethod
+    def from_csv(cls, path: Union[str, PathLike]) -> "Definition":
+        from flair_fst.definition.csv import load_definition
+
+        return load_definition(path)
+
+    @classmethod
+    def from_odf(cls, path: Union[str, PathLike]) -> "Definition":
+        from flair_fst.definition.odf import load_definition
+
+        return load_definition(path)
+
+    @classmethod
+    def from_xlsx(cls, path: Union[str, PathLike]) -> "Definition":
+        from flair_fst.definition.xlsx import load_definition
+
+        return load_definition(path)
+
+    @classmethod
+    def from_path(cls, path: Union[str, PathLike]) -> "Definition":
+        path = Path(path)
+
+        if path.is_dir():
+            return Definition.from_csv(path)
+        if path.suffix.lower() == ".ods":
+            return Definition.from_odf(path)
+        if path.suffix.lower() == ".xlsx":
+            return Definition.from_xlsx(path)
+        raise RuntimeError(f"Unknown or unsupported file extension: {path}")
+
+    def compile(self: "Definition") -> FST:
+        """Compile an FST from a definition."""
+        from flair_fst.compile.lexicon import make_lexicon
+        from flair_fst.compile.rules import make_rules
+
+        lex = make_lexicon(self).eliminate_flags()  # type: ignore
+        lex = lex.epsilon_remove().determinize().minimize()
+        rules = make_rules(self)
+        for name, rule in rules.items():
+            # Ugh, pyfoma's algorithm magic causes issues here...
+            lex.compose(rule).epsilon_remove().determinize().minimize()
+        return lex
 
 
 class WordDefinition(NamedTuple):
@@ -216,6 +265,7 @@ def bibliography_from_table(table: Iterable[Dict[str, str]]):
 
 
 def is_up_down(direction: str) -> TypeGuard[Literal["up", "down"]]:
+    """Ensure that a string is literally "up" or "down"."""
     return direction in ("up", "down")
 
 

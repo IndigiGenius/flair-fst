@@ -7,6 +7,7 @@ Pydantic soon.
 
 from typing import Dict, List, Union, Tuple, TypedDict
 
+__all__ = ["Orthography", "Morphology", "Glossary", "Gloss", "Bibliography"]
 
 TransitionsDict = Dict[int, Dict[str, List[Union[int, Tuple[int, float]]]]]
 
@@ -17,7 +18,13 @@ class FSTDict(TypedDict):
     s: Dict[str, int]
 
 
+Orthography = FSTDict
+Morphology = FSTDict
+
+
 class Gloss(TypedDict, total=False):
+    """Glossary entry."""
+
     gloss: str
     form: str
     ref: str

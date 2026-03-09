@@ -88,3 +88,5 @@ target = "flair_fst._rustfst_python"
 path = "Cargo.toml"
 binding = "NoBinding"
 
+[tool.isort]
+profile = "black"

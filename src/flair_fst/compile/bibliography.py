@@ -4,8 +4,8 @@ This doesn't do much of anything for the moment as the bibliography is
 already basically in the right format.
 """
 
-from .definition import Definition
-from ..models import Bibliography, BibliographyRecord
+from flair_fst.definition import Definition
+from flair_fst.models import Bibliography, BibliographyRecord
 
 
 def make_bibliography(defn: Definition) -> Bibliography:

@@ -1,3 +1,0 @@
-"""
-Lexicon building tools
-"""

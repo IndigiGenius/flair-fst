@@ -3,10 +3,11 @@ Tests for compiling WFSTs from input tables.
 """
 
 from pathlib import Path
-from flair_fst.compile import Definition
-from flair_fst.compile.odf import load_definition
 
 import pytest
+
+from flair_fst.definition import Definition
+from flair_fst.definition.odf import load_definition
 
 TESTDIR = Path(__file__).parent / "data"
 
@@ -18,7 +19,7 @@ def defn() -> Definition:
 
 def test_load_csv(defn) -> None:
     """Test loading from CSVs."""
-    from flair_fst.compile.csv import load_definition as load_csv_definition
+    from flair_fst.definition.csv import load_definition as load_csv_definition
 
     csv_defn = load_csv_definition(TESTDIR / "example-csv")
     assert csv_defn == defn
@@ -26,7 +27,7 @@ def test_load_csv(defn) -> None:
 
 def test_load_xlsx(defn) -> None:
     """Test loading from XLSXs."""
-    from flair_fst.compile.xlsx import load_definition as load_xlsx_definition
+    from flair_fst.definition.xlsx import load_definition as load_xlsx_definition
 
     xlsx_defn = load_xlsx_definition(TESTDIR / "example.xlsx")
     assert xlsx_defn == defn
@@ -48,7 +49,7 @@ def test_approx(defn) -> None:
 
 def test_lexicon(defn) -> None:
     """Test RLG lexicon construction from tables."""
-    from flair_fst.compile.lexicon import make_rlg, make_lexicon
+    from flair_fst.compile.lexicon import make_lexicon, make_rlg
 
     rlg = make_rlg(defn)
     print(rlg)
@@ -104,9 +105,8 @@ def test_bibliography(defn) -> None:
 def test_full_compile(defn) -> None:
     """Test fully compiled lexicon and rules."""
     from flair_fst.fst import pairs
-    from flair_fst.compile import compile
 
-    lex = compile(defn)
+    lex = defn.compile()
     for up, down in pairs(lex):
         print(up, down)
     assert "mangons" not in lex.apply("manger#+1pl")

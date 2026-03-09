@@ -3,8 +3,10 @@ Compile approximate matcher from table.
 """
 
 import re
+
 from pyfoma import FST
-from .definition import Definition
+
+from flair_fst.definition import Definition
 
 SPECIALS = "$^?,<>{}[]-+()|"
 ESCAPER = re.compile(f"([{re.escape(SPECIALS)}])")

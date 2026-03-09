@@ -3,9 +3,10 @@ Make rules from table.
 """
 
 from typing import Dict
+
 from pyfoma import FST
 
-from .definition import Definition
+from flair_fst import Definition
 
 
 def make_rules(defn: Definition) -> Dict[str, FST]:

@@ -5,8 +5,8 @@ Make glossary from all lexicon tables.
 import itertools
 from typing import List, Union
 
-from .definition import Definition, WordDefinition, MorphDefinition
-from ..models import Glossary, Gloss
+from flair_fst.definition import Definition, MorphDefinition, WordDefinition
+from flair_fst.models import Gloss, Glossary
 
 
 def make_glossary(defn: Definition) -> Glossary:

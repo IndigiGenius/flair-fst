@@ -12,7 +12,7 @@ import re as pyre
 from collections import deque
 from os import PathLike
 from pathlib import Path
-from typing import Dict, List, Union, Tuple
+from typing import Dict, Iterator, List, Tuple, Union
 
 from pyfoma.flag import FlagOp, FlagStringFilter
 from pyfoma.fst import FST, State
@@ -148,7 +148,7 @@ def fromdict(fstdict: Dict) -> FST:
     return fst
 
 
-def pairs(fst: FST):
+def pairs(fst: FST) -> Iterator[Tuple[str, str]]:
     """Yield pairs like foma would do."""
     flag_filter = FlagStringFilter(fst.alphabet)
     for _cost, seq in fst.words():

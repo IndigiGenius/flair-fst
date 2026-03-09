@@ -4,10 +4,11 @@ Compile lexicon from definitions.
 
 import itertools
 from typing import List, Tuple, Union
+
 from pyfoma import FST
 
 from flair_fst import RLG, RLGEntry
-from .definition import Definition, MorphDefinition
+from flair_fst.definition import Definition, MorphDefinition
 
 
 def make_pair(m: MorphDefinition, final: bool = False) -> Tuple[str, str]:

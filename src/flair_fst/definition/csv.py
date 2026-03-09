@@ -3,15 +3,16 @@ import logging
 from os import PathLike
 from pathlib import Path
 from typing import Dict, Iterator, Union
-from .definition import (
+
+from . import (
     Definition,
-    WordDefinition,
     MorphDefinition,
-    SymbolDefinition,
     RuleDefinition,
+    SymbolDefinition,
     TestCase,
-    spelling_from_table,
+    WordDefinition,
     bibliography_from_table,
+    spelling_from_table,
 )
 
 LOGGER = logging.getLogger(Path(__file__).stem)

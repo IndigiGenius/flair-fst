@@ -15,6 +15,7 @@ import json
 import logging
 from pathlib import Path
 from typing import TextIO
+
 from flair_fst.models import Bibliography, Glossary
 
 LOG = logging.getLogger("flair-fst")
@@ -27,7 +28,7 @@ def new_command(args: argparse.Namespace) -> None:
 
     template = ASSETS / "template.ods"
     if args.output.suffix == "":
-        from flair_fst.compile.odf import convert_to_csvs
+        from flair_fst.definition.odf import convert_to_csvs
 
         args.output.mkdir(exist_ok=True, parents=True)
         convert_to_csvs(template, args.output)
@@ -43,28 +44,23 @@ def new_command(args: argparse.Namespace) -> None:
 
 def compile_command(args: argparse.Namespace) -> None:
     """Compile a spreadsheet into a WFST."""
-    from flair_fst import compile_lexicon
+    from flair_fst import Definition, compile_lexicon, test_lexicon
 
-    if args.input.is_dir():
-        from flair_fst.compile.csv import load_definition
-
-        defn = load_definition(args.input)
-    else:
-        from flair_fst.compile.odf import load_definition
-
-        defn = load_definition(args.input)
+    defn = Definition.from_path(args.input)
     if args.output is None:
         args.output = args.input.with_suffix(".flairfst")
     args.output.mkdir(exist_ok=args.force)
 
     compile_lexicon(defn, args.output)
+    if not args.no_tests:
+        test_lexicon(args.output)
 
 
 def run_command(args: argparse.Namespace) -> None:
     """Run a WFST in the browser."""
-    import webbrowser
     import threading
-    from http.server import SimpleHTTPRequestHandler, HTTPServer
+    import webbrowser
+    from http.server import HTTPServer, SimpleHTTPRequestHandler
     from pathlib import Path
 
     assets = Path(__file__).parent / "assets"
@@ -174,11 +170,15 @@ def make_dl_bibliography(bibliography: Bibliography, outfh: TextIO) -> None:
         outfh.write(f"""
         <dt>{html.escape(abbrev)}</dt>""")
         if url := defn.get("url"):
-            outfh.write(f"""
-        <dd data-page-offset="{defn["pageOffset"]}"><a href="{url}">{html.escape(defn["citation"])}</a></dd>""")
+            outfh.write(
+                f"""
+        <dd data-page-offset="{defn["pageOffset"]}"><a href="{url}">{html.escape(defn["citation"])}</a></dd>"""
+            )
         else:
-            outfh.write(f"""
-        <dd data-page-offset="{defn["pageOffset"]}">{html.escape(defn["citation"])}</dd>""")
+            outfh.write(
+                f"""
+        <dd data-page-offset="{defn["pageOffset"]}">{html.escape(defn["citation"])}</dd>"""
+            )
     outfh.write("""
     </dl>""")
 
@@ -209,6 +209,7 @@ def main() -> None:
     compile_parser.add_argument(
         "-f", "--force", action="store_true", help="Overwrite output directory"
     )
+    compile_parser.add_argument("--no-test", help="Do not run tests")
     compile_parser.set_defaults(func=compile_command)
 
     run_parser = subparsers.add_parser("run", help="Run a WFST lexicon in the browser")

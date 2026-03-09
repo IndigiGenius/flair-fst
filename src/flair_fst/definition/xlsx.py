@@ -8,9 +8,11 @@ from os import PathLike
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Union
+
 from openpyxl import load_workbook
-from .definition import Definition
-from .csv import load_definition as load_csv_definition
+
+from flair_fst import Definition
+from flair_fst.definition.csv import load_definition as load_csv_definition
 
 LOGGER = logging.getLogger(Path(__file__).stem)
 

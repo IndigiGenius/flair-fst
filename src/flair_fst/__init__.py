@@ -8,20 +8,23 @@ Public interface to flair_fst.
 
 import json
 from pathlib import Path
+from typing import List, Tuple
+
 from pyfoma import FST
-from .fst import RLG, RLGEntry, todict
-from .compile import Definition, compile
+
 from .compile.approx import make_approx
 from .compile.bibliography import make_bibliography
 from .compile.glossary import make_glossary
+from .definition import Definition
+from .fst import RLG, RLGEntry, todict
 
-__all__ = ["FST", "RLG", "RLGEntry", "compile_lexicon"]
+__all__ = ["FST", "RLG", "RLGEntry", "Definition", "compile_lexicon"]
 
 
 def compile_lexicon(defn: Definition, path: Path) -> None:
     """Compile a definition to an output lexicon."""
 
-    lex = compile(defn)
+    lex = defn.compile()
     with open(path / "morphology.json", "w") as outfh:
         json.dump(todict(lex), outfh, ensure_ascii=False, indent=2)
     speling = make_approx(defn)
