@@ -53,7 +53,7 @@ def compile_command(args: argparse.Namespace) -> None:
 
     compile_lexicon(defn, args.output)
     if not args.no_tests:
-        test_lexicon(args.output)
+        test_lexicon(defn, args.output)
 
 
 def run_command(args: argparse.Namespace) -> None:

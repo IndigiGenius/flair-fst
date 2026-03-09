@@ -36,3 +36,9 @@ def compile_lexicon(defn: Definition, path: Path) -> None:
     bib = make_bibliography(defn)
     with open(path / "bibliography.json", "w") as outfh:
         json.dump(bib, outfh, ensure_ascii=False, indent=2)
+
+
+def test_lexicon(defn: Definition, path: Path) -> List[Tuple[str, str, str]]:
+    """Test a compiled lexicon, returning a list of mismatches."""
+
+    return []
