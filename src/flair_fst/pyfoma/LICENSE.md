@@ -1,0 +1,18 @@
+# Pyfoma enhancements and compatibility code
+
+The code in this directory is intended for future incorporation in
+[pyfoma](https://mhulden.github.io/pyfoma/) and has a different, more
+permissive license than the rest of FLAIR-FST.
+
+## License
+
+Licensed under either of
+ * Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+at your option.
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall
+be dual licensed as above, without any additional terms or conditions.

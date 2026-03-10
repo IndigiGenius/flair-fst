@@ -4,6 +4,10 @@ Set of tables that can be compiled into a WFST.
 The input may come as a spreadsheet (ODS or XLSX) or as a directory of CSV files.
 """
 
+# SPDX-FileCopyrightText: 2025-present IndigiGenius
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import logging
 import re
 from dataclasses import dataclass

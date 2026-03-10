@@ -102,7 +102,7 @@ def test_bibliography(defn) -> None:
 
 def test_full_compile(defn) -> None:
     """Test fully compiled lexicon and rules."""
-    from flair_fst.fst import pairs
+    from flair_fst.pyfoma import pairs
 
     lex = defn.compile()
     for up, down in pairs(lex):

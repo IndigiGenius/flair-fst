@@ -5,7 +5,11 @@ Pydantic soon.
 
 """
 
-from typing import Dict, List, Union, Tuple, TypedDict
+# SPDX-FileCopyrightText: 2025-present IndigiGenius
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+from typing import Dict, List, Tuple, TypedDict, Union
 
 __all__ = ["Orthography", "Morphology", "Glossary", "Gloss", "Bibliography"]
 
