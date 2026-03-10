@@ -1,3 +1,5 @@
+"""Read lexicon definiton from CSV files."""
+
 import csv
 import logging
 from os import PathLike

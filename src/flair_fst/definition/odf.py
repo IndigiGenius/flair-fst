@@ -1,6 +1,4 @@
-"""
-Load an ODS spreadsheet into a WFST definition.
-"""
+"""Load an ODS spreadsheet into a WFST definition."""
 
 import csv
 import logging

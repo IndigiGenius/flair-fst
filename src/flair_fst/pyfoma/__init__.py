@@ -1,10 +1,8 @@
+"""Some additional FST functions not available in pyfoma."""
+
 # SPDX-FileCopyrightText: 2025-present David Huggins-Daines <dhd@ecolingui.ca>
 #
-# SPDX-License-Identifier: AGPL-3.0-or-later
-
-"""
-Some additional FST functions not available in pyfoma
-"""
+# SPDX-License-Identifier: Apache-2.0 or MIT
 
 import json
 import operator

@@ -1,11 +1,12 @@
 """Unit testing for rustfst bridge."""
 
 from pyfoma import FST
-from flair_fst.fst import pairs
+
+from flair_fst.pyfoma import pairs
+from flair_fst.rustfst import eliminate_flags as rusty_eliminator
+from flair_fst.rustfst import pairs as rusty_pairs
 from flair_fst.rustfst import (
     pyfoma2rust,
-    eliminate_flags as rusty_eliminator,
-    pairs as rusty_pairs,
 )
 
 

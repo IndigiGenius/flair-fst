@@ -1,10 +1,10 @@
-# SPDX-FileCopyrightText: 2025-present David Huggins-Daines <dhd@ecolingui.ca>
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
-
 """
 Public interface to flair_fst.
 """
+
+# SPDX-FileCopyrightText: 2025-present IndigiGenius
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 import json
 from pathlib import Path
@@ -16,7 +16,7 @@ from flair_fst.compile.approx import make_approx
 from flair_fst.compile.bibliography import make_bibliography
 from flair_fst.compile.glossary import make_glossary
 from flair_fst.definition import Definition, TestCase
-from flair_fst.fst import RLG, RLGEntry, fromdict, pairs, todict
+from flair_fst.pyfoma import RLG, RLGEntry, fromdict, pairs, todict
 
 __all__ = ["FST", "RLG", "RLGEntry", "Definition", "compile_lexicon", "test_lexicon"]
 
